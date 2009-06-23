@@ -1,0 +1,17 @@
+Source: mussorgsky
+Section: python
+Priority: extra
+Maintainer: Ivan Frade <ivan.frade@gmail.com>
+Build-Depends: cdbs, debhelper (>= 5), python-all-dev (>= 2.5), python-central (>= 0.5.6)
+Standards-Version: 3.8.0
+Homepage: http://mussorgsky.garage.maemo.org
+XS-Python-Version: current, >= 2.5
+
+Package: mussorgsky
+Architecture: all
+Depends: ${python:Depends}
+XB-Python-Version: current, >=2.5
+Description: Music Organizer, audio files metadata editor
+ Mussorgsky is a tool to set the basic metadata in the audio files 
+ so the music collection management can be done completely on the 
+ maemo device, without the help of a desktop computer.
