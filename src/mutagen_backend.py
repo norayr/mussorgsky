@@ -52,9 +52,6 @@ class MutagenBackend ():
 
 if __name__ == "__main__":
 
-    # use id3lib for verification
-    import pyid3lib
-
     def verify (filename, expected_artist, expected_title, expected_album):
         from mutagen.easyid3 import EasyID3
         audio = EasyID3 (filename)
