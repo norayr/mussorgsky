@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.maemo.mussorgsky
+Exec=/usr/bin/mussorgsky.py

@@ -1,0 +1,18 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Name=Mussorgsky
+Comment=Music organizer
+Exec=/usr/bin/mussorgsky.py
+Icon=general_settings
+X-Icon-path=/usr/share/pixmaps
+X-Window-Icon=tn-bookmarks-link
+X-HildonDesk-ShowInToolbar=true
+X-Osso-Service=org.maemo.mussorgsky
+X-Osso-Type=application/x-executable
+Comment=copacabana
+X-Osso-User-Position=14
+X-Maemo-Category=Main
+X-Text-Domain=mussorgsky
+X-Maemo-Wm-Class=Musssorgsky

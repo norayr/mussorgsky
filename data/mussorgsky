@@ -1,0 +1,10 @@
+#!/bin/sh 
+
+PROGRAM=/usr/bin/mussorgsky.py
+PYTHON=`which python2.5`
+
+if [ -e /scratchbox ]; then
+   run-standalone.sh $PYTHON $PROGRAM ;
+else
+   $PYTHON $PROGRAM ;
+fi
