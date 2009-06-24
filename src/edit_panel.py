@@ -16,6 +16,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
     def __init__ (self, songs_list=None, albums_list=None, artists_list=None):
         hildon.StackableWindow.__init__ (self)
         self.set_title ("Edit")
+        self.set_border_width (12)
         self.writer = MutagenBackend ()
         self.player = MediaPlayer ()
         self.albums_list = albums_list
@@ -110,7 +111,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         
 
     def __create_view (self):
-        view_vbox = gtk.VBox (homogeneous=False, spacing = 24)
+        view_vbox = gtk.VBox (homogeneous=False, spacing = 12)
 
         filename_row = gtk.HBox ()
         filename_label = gtk.Label ("Filename:")
@@ -118,12 +119,15 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         self.filename_data = gtk.Label ("")
         filename_row.pack_start (self.filename_data, expand=True)
 
-        play_button = gtk.Button (stock=gtk.STOCK_MEDIA_PLAY)
+        #play_button = gtk.Button (stock=gtk.STOCK_MEDIA_PLAY)
+        play_button = hildon.Button (hildon.BUTTON_STYLE_NORMAL, hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
+        img = gtk.image_new_from_stock (gtk.STOCK_MEDIA_PLAY, gtk.ICON_SIZE_BUTTON)
+        play_button.set_image (img)
         play_button.connect ("clicked", self.clicked_play)
-        filename_row.pack_start (play_button, expand=False, fill=False, padding=12)
-        view_vbox.pack_start (filename_row, expand=True);
+        filename_row.pack_start (play_button, expand=False, fill=False)
+        view_vbox.pack_start (filename_row, expand=False);
 
-        central_panel = gtk.VBox ()
+        central_panel = gtk.HBox (spacing=12)
 
         table = gtk.Table (3, 2, False)
         table.set_col_spacings (12)
@@ -156,19 +160,31 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         self.album_entry = gtk.Entry()
         table.attach (self.album_entry, 1, 2, 2, 3)
 
+        # Album art space
+        album_button = gtk.Button ()
+        self.album_art = gtk.Image ()
+        self.album_art.set_size_request (124, 124)
+        album_button.add (self.album_art)
+        album_button.connect ("clicked", self.clicked_album_art)
+        central_panel.pack_start (album_button, expand=False, fill=False)
+        
         # Buttons row
         button_box = gtk.HButtonBox ()
         button_box.set_layout (gtk.BUTTONBOX_END)
 
-        back_button = gtk.Button (stock=gtk.STOCK_GO_BACK)
+        back_button = hildon.Button (hildon.BUTTON_STYLE_NORMAL, hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
+        img = gtk.image_new_from_stock (gtk.STOCK_GO_BACK, gtk.ICON_SIZE_BUTTON)
+        back_button.set_image (img)
         back_button.connect ("clicked", self.press_back_cb)
         button_box.pack_start (back_button, expand=True, fill=True, padding=6)
         
-        next_button = gtk.Button (stock=gtk.STOCK_GO_FORWARD)
+        next_button = hildon.Button (hildon.BUTTON_STYLE_NORMAL, hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
+        img = gtk.image_new_from_stock (gtk.STOCK_GO_FORWARD, gtk.ICON_SIZE_BUTTON)
+        next_button.set_image (img)
         next_button.connect ("clicked", self.press_next_cb)
         button_box.pack_start (next_button, expand=True, fill=True, padding=6)
         
-        view_vbox.pack_start (button_box, expand=False, fill=True, padding=12)
+        view_vbox.pack_start (button_box, expand=False, fill=True, padding=6)
         
         return view_vbox
 
@@ -184,6 +200,8 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         self.title_entry.set_text (song[TITLE_KEY])
         self.album_entry.set_text (song[ALBUM_KEY])
 
+        self.album_art.set_from_file ("/home/ivan/cover-sample.jpeg")
+
         if (not song[MIME_KEY] in self.writer.get_supported_mimes ()):
             print "show notification"
             self.banner = hildon.Banner ()
@@ -196,6 +214,9 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         else:
             song = self.songs_list [self.song_counter]
             self.player.play ("file://" + song[FILE_URI])
+
+    def clicked_album_art (self, widget):
+        print "implement me, please"
 
     def album_selection_cb (self, widget):
         if (not self.albums_selector):
