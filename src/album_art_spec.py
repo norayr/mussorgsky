@@ -4,7 +4,7 @@ import unicodedata
 import string
 
 COVERS_LOCATION = os.getenv ("HOME") + "/.cache/media-art/"
-THUMBS_LOCATION = os.getenv ("HOME") + "/.thumbnails/cropped/"
+THUMBS_LOCATION = os.getenv ("HOME") + "/.thumbnails/normal/"
 
 def getCoverArtFileName (album):
     """Returns the cover art's filename that is formed from the album name."""
