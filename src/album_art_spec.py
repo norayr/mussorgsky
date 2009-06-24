@@ -8,7 +8,6 @@ THUMBS_LOCATION = os.getenv ("HOME") + "/.thumbnails/cropped/"
 
 def getCoverArtFileName (album):
     """Returns the cover art's filename that is formed from the album name."""
-    print "Calculating album art for " + album
     album = unicode (album)
     albumString=dropInsideContent(album,"[","]" )
     albumString=dropInsideContent(albumString,"{","}" )
@@ -22,26 +21,22 @@ def getCoverArtFileName (album):
     albumString=string.replace(albumString,"  "," ")    
     
     try:
-        print "Trying NFKD"
         albumString=unicodedata.normalize('NFKD',albumString).encode()
         albumString=albumString.encode()
-        print albumString
     except:
         try:
-            print "Trying latin-1"
             albumString=albumString.encode('latin-1', 'ignore')
             albumString=unicodedata.normalize('NFKD',albumString).encode("ascii")
             albumString=str(albumString)
             print albumString
         except Exception, e:
-            albumString="unknown"
-            print "unknown" + str(e)
+            albumString=str(albumString)
+            print "DEBUG: Using plain string"
     if len(albumString)==0: albumString=" "
      
     albumMD5=md5.new(albumString).hexdigest()    
     emptyMD5=md5.new(" ").hexdigest()
     albumArt=COVERS_LOCATION + "album-" + emptyMD5 + "-" + albumMD5 + ".jpeg"
-    print "Album art:" + albumArt
     return albumArt
 
 
@@ -60,3 +55,8 @@ def dropInsideContent(s, startMarker, endMarker):
     if startPos>0 and endPos>0 and endPos>startPos:
             return s[0:startPos]+s[endPos+1:len(s)]
     return s
+
+if __name__ == "__main__":
+
+    print "album art: %s" % (getCoverArtFileName (unicode("Absolution")))
+    print "thumbnail: %s" % (getCoverArtThumbFileName (u"Absolution"))
