@@ -110,7 +110,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         
 
     def __create_view (self):
-        view_vbox = gtk.VBox (homogeneous=False, spacing = 42)
+        view_vbox = gtk.VBox (homogeneous=False, spacing = 24)
 
         filename_row = gtk.HBox ()
         filename_label = gtk.Label ("Filename:")
@@ -123,38 +123,38 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         filename_row.pack_start (play_button, expand=False, fill=False, padding=12)
         view_vbox.pack_start (filename_row, expand=True);
 
+        central_panel = gtk.VBox ()
+
+        table = gtk.Table (3, 2, False)
+        table.set_col_spacings (12)
+        table.set_row_spacings (12)
+
+        central_panel.pack_start (table)
+        view_vbox.pack_start (central_panel, expand=True, fill=True)
+
         # Artist row
-        artist_row = gtk.HBox ()
         button_artist = gtk.Button ("Artist:")
         if (not self.artists_list):
             button_artist.set_sensitive (False)
         button_artist.connect ("clicked", self.artist_selection_cb)
-        artist_row.pack_start (button_artist, expand=False, padding=12)
+        table.attach (button_artist, 0, 1, 0, 1, 0, gtk.FILL|gtk.EXPAND)
         self.artist_entry = gtk.Entry()
-        artist_row.pack_start (self.artist_entry, padding=12)
-
-        view_vbox.pack_start (artist_row, expand=False)
+        table.attach (self.artist_entry, 1, 2, 0, 1)
 
         # Title row
-        title_row = gtk.HBox ()
         label_title = gtk.Label ("Title:")
-        title_row.pack_start (label_title, expand=False, padding=12)
+        table.attach (label_title, 0, 1, 1, 2, 0)
         self.title_entry = gtk.Entry()
-        title_row.pack_start (self.title_entry, padding=12)
-
-        view_vbox.pack_start (title_row, expand=False)
+        table.attach (self.title_entry, 1, 2, 1, 2)
 
         # Album row
-        album_row = gtk.HBox ()
         button_album = gtk.Button ("Album:")
         if (not self.albums_list):
             button_album.set_sensitive (False)
         button_album.connect ("clicked", self.album_selection_cb)
-        album_row.pack_start (button_album, expand=False, padding=12)
+        table.attach (button_album, 0, 1, 2, 3, 0)
         self.album_entry = gtk.Entry()
-        album_row.pack_start (self.album_entry, padding=12)
-
-        view_vbox.pack_start (album_row, expand=False)
+        table.attach (self.album_entry, 1, 2, 2, 3)
 
         # Buttons row
         button_box = gtk.HButtonBox ()
@@ -162,13 +162,13 @@ class MussorgskyEditPanel (hildon.StackableWindow):
 
         back_button = gtk.Button (stock=gtk.STOCK_GO_BACK)
         back_button.connect ("clicked", self.press_back_cb)
-        button_box.pack_start (back_button, padding=12)
+        button_box.pack_start (back_button, expand=True, fill=True, padding=6)
         
         next_button = gtk.Button (stock=gtk.STOCK_GO_FORWARD)
-        button_box.pack_start (next_button, padding=12)
         next_button.connect ("clicked", self.press_next_cb)
+        button_box.pack_start (next_button, expand=True, fill=True, padding=6)
         
-        view_vbox.pack_start (button_box, expand=True)
+        view_vbox.pack_start (button_box, expand=False, fill=True, padding=12)
         
         return view_vbox
 
