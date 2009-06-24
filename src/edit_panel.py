@@ -3,6 +3,8 @@ import hildon
 import gtk
 from mutagen_backend import MutagenBackend
 from player_backend import MediaPlayer
+import album_art_spec
+import os
 
 # Fields in the tuple!
 FILE_URI = 0
@@ -133,7 +135,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         table.set_col_spacings (12)
         table.set_row_spacings (12)
 
-        central_panel.pack_start (table)
+        central_panel.pack_start (table, fill=True)
         view_vbox.pack_start (central_panel, expand=True, fill=True)
 
         # Artist row
@@ -200,7 +202,16 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         self.title_entry.set_text (song[TITLE_KEY])
         self.album_entry.set_text (song[ALBUM_KEY])
 
-        self.album_art.set_from_file ("/home/ivan/cover-sample.jpeg")
+        has_album = False
+        if (song[ALBUM_KEY]):
+            thumb = album_art_spec.getCoverArtThumbFileName (song[ALBUM_KEY])
+            print "%s -> %s" % (song[ALBUM_KEY], thumb)
+            if (os.path.exists (thumb)):
+                self.album_art.set_from_file (thumb)
+                has_album = True
+                
+        if (not has_album):
+            self.album_art.set_from_stock (gtk.STOCK_CDROM, gtk.ICON_SIZE_DIALOG)
 
         if (not song[MIME_KEY] in self.writer.get_supported_mimes ()):
             print "show notification"
