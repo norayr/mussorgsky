@@ -24,13 +24,13 @@ class MussorgskyAlbumArt:
     def __init__ (self):
         bus = dbus.SessionBus ()
         handle = time.time()
-        try:
-            self.thumbnailer = bus.get_object ('org.freedesktop.thumbnailer',
-                                               '/org/freedesktop/thumbnailer/Generic')
-        except dbus.exceptions.DBusException:
-            if (pil_available):
-                self.thumbnailer = LocalThumbnailer ()
-            else:
+        if (pil_available):
+            self.thumbnailer = LocalThumbnailer ()
+        else:
+            try:
+                self.thumbnailer = bus.get_object ('org.freedesktop.thumbnailer',
+                                                   '/org/freedesktop/thumbnailer/Generic')
+            except dbus.exceptions.DBusException:
                 print "No thumbnailer available"
                 self.thumbnailer = None
 
@@ -59,11 +59,11 @@ class MussorgskyAlbumArt:
         return (filename, thumbnail)
 
     def __last_fm (self, artist, album):
-        if (not artist and not album):
+        if (not album or len (album) < 1):
             return
         
         URL = BASE_LASTFM + "&api_key=" + LASTFM_APIKEY
-        if (artist):
+        if (artist and len(artist) > 1):
             URL += "&artist=" + urllib.quote(artist)
         if (album):
             URL += "&album=" + urllib.quote(album)
