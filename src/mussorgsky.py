@@ -54,6 +54,12 @@ class MussorgskyMainWindow (hildon.StackableWindow):
                                       self.tracker.count_songs_wo_album ())
         return False
 
+    def browse_clicked (self, widget):
+        list_songs = self.tracker.get_all_songs ()
+        list_albums = self.tracker.get_list_of_known_albums ()
+        list_artists = self.tracker.get_list_of_known_artists ()
+        self.show_edit_panel (list_songs, list_albums, list_artists)
+
     def create_main_view (self):
         vbox = gtk.VBox ()
 
@@ -86,6 +92,12 @@ class MussorgskyMainWindow (hildon.StackableWindow):
         album_row.add (button_albums)
 
         vbox.add (album_row)
+
+        # All songs row
+        all_songs_row = hildon.Button (hildon.BUTTON_STYLE_NORMAL, hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
+        all_songs_row.set_title ("Browse the music collection")
+        all_songs_row.connect ("clicked", self.browse_clicked)
+        vbox.add (all_songs_row)
 
         return vbox
 

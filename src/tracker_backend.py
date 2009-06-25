@@ -21,6 +21,7 @@ RDF_NO_ARTIST = RDF_NO_PROPX % "Audio:Artist"
 RDF_NO_ALBUM = RDF_NO_PROPX % "Audio:Album"
 RDF_NO_TITLE = RDF_NO_PROPX % "Audio:Title"
 
+
 class TrackerBackend:
 
     def __init__ (self):
@@ -75,6 +76,10 @@ class TrackerBackend:
         """
         return self.__run_rdf_query (RDF_NO_ALBUM)
 
+    def get_all_songs (self):
+        return self.__run_rdf_query ("")
+
+
     def get_list_of_known_albums (self):
         return self.iface_metadata.GetUniqueValues ("Music",
                                                     ["Audio:Album"],
@@ -105,3 +110,5 @@ if __name__ == "__main__":
     for a in albums:
         print a[0]
     
+    print "\nAll songs:"
+    print tracker.get_all_songs ()
