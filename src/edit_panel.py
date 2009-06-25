@@ -1,9 +1,10 @@
 #!/usr/bin/env python2.5
 import hildon
-import gtk
+import gtk, gobject
 from mutagen_backend import MutagenBackend
 from player_backend import MediaPlayer
 import album_art_spec
+from album_art import MussorgskyAlbumArt
 import os
 
 # Fields in the tuple!
@@ -21,6 +22,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         self.set_border_width (12)
         self.writer = MutagenBackend ()
         self.player = MediaPlayer ()
+        self.album_art_retriever = MussorgskyAlbumArt ()
         self.albums_list = albums_list
         self.artists_list = artists_list
         self.add (self.__create_view ())
@@ -33,8 +35,11 @@ class MussorgskyEditPanel (hildon.StackableWindow):
 
         self.albums_selector = None
         self.albums_dialog = None
+        self.album_callback_id = -1
+
         
     def set_songs_list (self, songs_list):
+        if (songs_list and len (songs_list) > 0):
             self.songs_list = songs_list
             self.set_data_in_view (songs_list [0])
             self.song_counter = 0
@@ -45,6 +50,10 @@ class MussorgskyEditPanel (hildon.StackableWindow):
 
         if (self.banner and self.banner.get_property("visible")):
             self.banner.destroy ()
+
+        if (self.album_callback_id != -1):
+            gobject.source_remove (self.album_callback_id)
+            self.album_callback_id = -1
 
         if self.__is_view_dirty ():
             print "Modified data. Save!"
@@ -60,6 +69,10 @@ class MussorgskyEditPanel (hildon.StackableWindow):
 
         if (self.banner and self.banner.get_property("visible")):
             self.banner.destroy ()
+
+        if (self.album_callback_id != -1):
+            gobject.source_remove (self.album_callback_id)
+            self.album_callback_id = -1
 
         if self.__is_view_dirty ():
             print "Modified data. Save!"
@@ -205,10 +218,12 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         has_album = False
         if (song[ALBUM_KEY]):
             thumb = album_art_spec.getCoverArtThumbFileName (song[ALBUM_KEY])
-            print "%s -> %s" % (song[ALBUM_KEY], thumb)
+	    print "%s -> %s" % (song[ALBUM_KEY], thumb)
             if (os.path.exists (thumb)):
                 self.album_art.set_from_file (thumb)
                 has_album = True
+            else:
+                self.album_callback_id = gobject.idle_add (self.retrieve_album_art, song[ARTIST_KEY], song[ALBUM_KEY])
                 
         if (not has_album):
             self.album_art.set_from_stock (gtk.STOCK_CDROM, gtk.ICON_SIZE_DIALOG)
@@ -219,6 +234,16 @@ class MussorgskyEditPanel (hildon.StackableWindow):
             self.banner.set_text ("Unsupported format (%s)" % song[MIME_KEY])
             self.banner.show_all ()
 
+    def retrieve_album_art (self, artist, album):
+        print "trying to get the album art"
+        (img, thumb) = self.album_art_retriever.get_album_art (artist, album)
+        if (thumb):
+            self.album_art.set_from_file (thumb)
+        else:
+            print "Unable to retrieve album art"
+
+        return False
+        
     def clicked_play (self, widget):
         if (self.player.is_playing ()):
             self.player.stop ()
@@ -269,6 +294,7 @@ if __name__ == "__main__":
 
     TEST_DATA = [("/a/b/c/d.mp3", "Music", "", "title", "album", "audio/mpeg"),
                  ("/home/user/mufix/dejame.mp3", "Music", "", "title", "album 2", "a/b"),
+		 ("/media/mmc1/Attachments/1-14 Una Rosa Es Una Rosa.m4a", "Music", "", "Una rosa es una rosa", "Ana, Jose, Nacho", "audio/mpeg"),
                  ("/home/user/mufix/3.mp2", "Music", "", "titlex", "album 3", "audio/mpeg")]
     ALBUMS = [["Album %d" % i] for i in range (0, 10)]
     ARTISTS = [["Artist %d" % i] for i in range (0, 10)]
