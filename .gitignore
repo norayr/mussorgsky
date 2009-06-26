@@ -1,0 +1,10 @@
+build/
+*.pyo
+*.pyc
+debian/files
+debian/mussorgsky
+debian/mussorgsky.debhelper.log
+debian/mussorgsky.postinst.debhelper
+debian/mussorgsky.prerm.debhelper
+debian/mussorgsky.substvars
+debian/pycompat
