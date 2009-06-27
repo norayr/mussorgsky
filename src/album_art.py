@@ -4,6 +4,7 @@ import libxml2
 import os
 from album_art_spec import getCoverArtFileName, getCoverArtThumbFileName, get_thumb_filename_for_path
 import dbus, time
+import string
 
 try:
     import PIL
@@ -15,6 +16,13 @@ except ImportException:
 
 LASTFM_APIKEY = "1e1d53528c86406757a6887addef0ace"
 BASE_LASTFM = "http://ws.audioscrobbler.com/2.0/?method=album.getinfo"
+
+
+BASE_MSN = "http://www.bing.com/images/search?q="
+MSN_MEDIUM = "+filterui:imagesize-medium"
+MSN_SMALL = "+filterui:imagesize-medium"
+MSN_SQUARE = "+filterui:aspect-square"
+MSN_PHOTO = "+filterui:photo-graphics"
 
 # LastFM:
 # http://www.lastfm.es/api/show?service=290
@@ -44,23 +52,30 @@ class MussorgskyAlbumArt:
         if (os.path.exists (filename)):
             print "Album art already there " + filename
         else:
-            online_resource = self.__last_fm (artist, album)
+            online_resource = self.__msn_images (artist, album)
             if (online_resource):
-                self.__save_url_into_file (online_resource, filename)
+                content = self.__get_url (online_resource)
+                if (content):
+                    print "Saved %s -> %s " % (online_resource, filename)
+                    self.__save_content_into_file (content, filename)
+                else:
+                    return (None, None)
             else:
                 return (None, None)
 
         if (os.path.exists (thumbnail)):
             print "Thumbnail exists"
         else:
-            print "Requesting thumbnail"
-            self.__request_thumbnail (filename)
+            if (not self.__request_thumbnail (filename)):
+                print "Failed doing thumbnail. Probably album art is not an image!"
+                os.remove (filename)
+                return (None, None)
 
         return (filename, thumbnail)
 
     def __last_fm (self, artist, album):
         if (not album or len (album) < 1):
-            return
+            return None
         
         URL = BASE_LASTFM + "&api_key=" + LASTFM_APIKEY
         if (artist and len(artist) > 1):
@@ -79,12 +94,64 @@ class MussorgskyAlbumArt:
         else:
             return image_nodes[0].content
 
-    def __save_url_into_file (self, url, filename):
-        image = self.__get_url (url)
-        output_image = open (filename, 'w')
-        output_image.write (image)
-        output_image.close ()
-        print "Saved %s -> %s " % (url, filename)
+    def __msn_images (self, artist, album):
+
+        good_artist = self.__clean_string_for_search (artist)
+        good_album = self.__clean_string_for_search (album)
+
+        print good_artist
+        if (good_album and good_artist):
+            full_try = BASE_MSN + good_album + "+" + good_artist + MSN_MEDIUM + MSN_SQUARE
+            print "Retrieving (album + artist): %s" % (full_try)
+            result = self.__get_url (full_try)
+            if (result):
+                return self.__get_first_url_from_msn_results_page (result)
+
+        if (album):
+            if (album.lower ().find ("greatest hit") != -1):
+                print "Ignoring '%s': too generic" % (album)
+                pass
+            else:
+                album_try = BASE_MSN + good_album + MSN_MEDIUM + MSN_SQUARE
+                print "Retrieving (album): %s" % (album_try)
+                result = self.__get_url (album_try)
+                if (result):
+                    return self.__get_first_url_from_msn_results_page (result)
+
+        if (artist):
+            artist_try = BASE_MSN + good_artist + "+CD+music"  + MSN_SMALL + MSN_SQUARE + MSN_PHOTO
+            print "Retrieving (artist CD): %s" % (artist_try)
+            result = self.__get_url (artist_try)
+            if (result):
+                return self.__get_first_url_from_msn_results_page (result)
+            
+        return None
+
+
+    def __get_first_url_from_msn_results_page (self, page):
+        start = page.find ("furl=")
+        if (start == -1):
+            return None
+        end = page.find ("\"", start + len ("furl="))
+        return page [start + len ("furl="): end].replace ("amp;", "")
+
+    def __clean_string_for_search (self, text):
+        if (not text or len (text) < 1):
+            return None
+            
+        bad_stuff = "_:?\\-~"
+        clean = text
+        for c in bad_stuff:
+            clean = clean.replace (c, " ")
+
+        clean.replace ("/", "%2F")
+        clean = clean.replace (" CD1", "").replace(" CD2", "")
+        return urllib.quote(clean)
+
+    def __save_content_into_file (self, content, filename):
+        output = open (filename, 'w')
+        output.write (content)
+        output.close ()
         
     def __get_url (self, url):
         request = urllib2.Request (url)
@@ -102,7 +169,8 @@ class MussorgskyAlbumArt:
         uri = "file://" + filename
         handle = time.time ()
         print "Call to thumbnailer"
-        self.thumbnailer.Queue ([uri], ["image/jpeg"], dbus.UInt32 (handle))
+        return self.thumbnailer.Queue ([uri], ["image/jpeg"], dbus.UInt32 (handle))
+            
 
 
 class LocalThumbnailer:
@@ -110,18 +178,22 @@ class LocalThumbnailer:
         self.THUMBNAIL_SIZE = (124,124)
 
     def Queue (self, uris, mimes, handle):
-        print "Queue"
         for i in range (0, len(uris)):
             uri = uris[i]
             fullCoverFileName = uri[7:]
             print fullCoverFileName
             if (os.path.exists (fullCoverFileName)):
                 thumbFile = get_thumb_filename_for_path (fullCoverFileName)
-                
-                image = Image.open (fullCoverFileName)
+                try:
+                    image = Image.open (fullCoverFileName)
+                except IOError, e:
+                    print e
+                    return False
                 image = image.resize (self.THUMBNAIL_SIZE, Image.ANTIALIAS )
                 image.save( thumbFile, "JPEG" )
                 print "Thumbnail: " + thumbFile
+        return True
+            
 
 
 if __name__ == "__main__":
@@ -132,7 +204,7 @@ if __name__ == "__main__":
     else:
         print "ARTIST ALBUM"
         sys.exit (-1)
+
     maa = MussorgskyAlbumArt ()
-    print "Artist %s - Album %s" % (artist, unicode(album))
-    print maa.get_album_art (artist, unicode(album))
-    #assert (None, None) == maa.get_album_art ("muse", "absolution")
+    print "Artist %s - Album %s" % (artist, album)
+    print maa.get_album_art (artist, album)
