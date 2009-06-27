@@ -56,7 +56,7 @@ class MussorgskyAlbumArt:
             if (online_resource):
                 content = self.__get_url (online_resource)
                 if (content):
-                    print "Saved %s -> %s " % (online_resource, filename)
+                    print "Albumart: %s " % (filename)
                     self.__save_content_into_file (content, filename)
                 else:
                     return (None, None)
@@ -99,7 +99,6 @@ class MussorgskyAlbumArt:
         good_artist = self.__clean_string_for_search (artist)
         good_album = self.__clean_string_for_search (album)
 
-        print good_artist
         if (good_album and good_artist):
             full_try = BASE_MSN + good_album + "+" + good_artist + MSN_MEDIUM + MSN_SQUARE
             print "Retrieving (album + artist): %s" % (full_try)
@@ -168,7 +167,6 @@ class MussorgskyAlbumArt:
             return
         uri = "file://" + filename
         handle = time.time ()
-        print "Call to thumbnailer"
         return self.thumbnailer.Queue ([uri], ["image/jpeg"], dbus.UInt32 (handle))
             
 
@@ -181,7 +179,6 @@ class LocalThumbnailer:
         for i in range (0, len(uris)):
             uri = uris[i]
             fullCoverFileName = uri[7:]
-            print fullCoverFileName
             if (os.path.exists (fullCoverFileName)):
                 thumbFile = get_thumb_filename_for_path (fullCoverFileName)
                 try:
@@ -206,5 +203,4 @@ if __name__ == "__main__":
         sys.exit (-1)
 
     maa = MussorgskyAlbumArt ()
-    print "Artist %s - Album %s" % (artist, album)
-    print maa.get_album_art (artist, album)
+    maa.get_album_art (artist, album)
