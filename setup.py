@@ -11,6 +11,7 @@ SCRIPTS = ['src/album_art.py',
            'src/album_art_spec.py',
            'src/mussorgsky.py',
            'src/player_backend.py',
+           'src/download_dialog.py',
            'data/mussorgsky']
 
 DATA = [('share/applications/hildon', ['data/mussorgsky.desktop']),
@@ -19,7 +20,7 @@ DATA = [('share/applications/hildon', ['data/mussorgsky.desktop']),
  
 setup(name         = 'mussorgsky',
       version      = '0.1',
-      description  = 'Music metadata editor',
+      description  = 'Music Organizer: metadata editor',
       author       = 'Ivan Frade',
       author_email = '<ivan.frade@gmail.com>',
       url          = 'http://mussorgsky.garage.maemo.org',
