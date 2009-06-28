@@ -90,6 +90,11 @@ class TrackerBackend:
                                                     ["Audio:Artist"],
                                                     "", False, 0, 32000)
 
+    def get_all_pairs_artist_album (self):
+        return self.iface_metadata.GetUniqueValues ("Music",
+                                                    ["Audio:Artist", "Audio:Album"],
+                                                    "", False, 0, 32000)
+
 # Test
 if __name__ == "__main__":
 
