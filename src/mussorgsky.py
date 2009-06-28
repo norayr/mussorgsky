@@ -3,14 +3,15 @@ import hildon
 import gtk, gobject
 from tracker_backend import TrackerBackend
 from edit_panel import MussorgskyEditPanel
-
+from download_dialog import MussorgskyAlbumArtDownloadDialog
 
 class MussorgskyMainWindow (hildon.StackableWindow):
 
     def __init__ (self):
         hildon.StackableWindow.__init__ (self)
         self.tracker = TrackerBackend ()
-        self.set_title ("Mussorgsky")
+        self.set_title ("MussOrgsky")
+        self.set_border_width (12)
         self.connect ("destroy", gtk.main_quit)
         main_view_box = self.create_main_view ()
         self.add (main_view_box)
@@ -54,6 +55,13 @@ class MussorgskyMainWindow (hildon.StackableWindow):
                                       self.tracker.count_songs_wo_album ())
         return False
 
+    def get_all_album_art (self, user_data):
+        print "Get all album art"
+        artist_album= self.tracker.get_all_pairs_artist_album ()
+        dialog = MussorgskyAlbumArtDownloadDialog (self)
+        dialog.show_all ()
+        dialog.do_the_job (artist_album)
+        
     def browse_clicked (self, widget):
         list_songs = self.tracker.get_all_songs ()
         list_albums = self.tracker.get_list_of_known_albums ()
@@ -61,7 +69,7 @@ class MussorgskyMainWindow (hildon.StackableWindow):
         self.show_edit_panel (list_songs, list_albums, list_artists)
 
     def create_main_view (self):
-        vbox = gtk.VBox ()
+        vbox = gtk.VBox (spacing=12)
 
         # Artist row
         artist_row = gtk.HBox (homogeneous=True)
@@ -94,9 +102,19 @@ class MussorgskyMainWindow (hildon.StackableWindow):
         vbox.add (album_row)
 
         # All songs row
-        all_songs_row = hildon.Button (hildon.BUTTON_STYLE_NORMAL, hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
-        all_songs_row.set_title ("Browse the music collection")
-        all_songs_row.connect ("clicked", self.browse_clicked)
+        all_songs_row = gtk.HBox (homogeneous=True, spacing=12)
+        album_art = hildon.Button (hildon.BUTTON_STYLE_NORMAL,
+                                hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
+        album_art.set_title ("Get all album art")
+        album_art.connect ("clicked", self.get_all_album_art)
+        all_songs_row.add (album_art)
+
+        browse = hildon.Button (hildon.BUTTON_STYLE_NORMAL,
+                                hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
+        browse.set_title ("Browse the collection")
+        browse.connect ("clicked", self.browse_clicked)
+        all_songs_row.add (browse)
+
         vbox.add (all_songs_row)
 
         return vbox
