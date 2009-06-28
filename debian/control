@@ -1,5 +1,5 @@
 Source: mussorgsky
-Section: python
+Section: user/multimedia
 Priority: extra
 Maintainer: Ivan Frade <ivan.frade@gmail.com>
 Build-Depends: cdbs, debhelper (>= 5), python-all-dev (>= 2.5), python-central (>= 0.5.6)
