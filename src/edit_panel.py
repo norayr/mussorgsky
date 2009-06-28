@@ -20,22 +20,18 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         hildon.StackableWindow.__init__ (self)
         self.set_title ("Edit")
         self.set_border_width (12)
+        self.song_counter = 0
+        self.album_callback_id = -1
+        self.album_change_handler = -1
         self.writer = MutagenBackend ()
         self.player = MediaPlayer ()
         self.album_art_retriever = MussorgskyAlbumArt ()
-        self.albums_list = albums_list
-        self.artists_list = artists_list
+        self.albums_list = [a [0] for a in albums_list]
+        self.artists_list = [a [0] for a in artists_list]
         self.add (self.__create_view ())
         if (songs_list):
             self.set_songs_list (songs_list)
         self.banner = None
-
-        self.artists_selector = None
-        self.artists_dialog = None
-
-        self.albums_selector = None
-        self.albums_dialog = None
-        self.album_callback_id = -1
 
         
     def set_songs_list (self, songs_list):
@@ -90,17 +86,17 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         song = self.songs_list [self.song_counter]
 
         new_song = (song[FILE_URI], song[1],
-                    self.artist_entry.get_text (),
+                    self.artist_button.get_value (),
                     self.title_entry.get_text (),
-                    self.album_entry.get_text (),
+                    self.album_button.get_value (),
                     song[MIME_KEY])
         self.songs_list [self.song_counter] = new_song
         try:
             self.writer.save_metadata_on_file (new_song[FILE_URI],
                                                new_song[MIME_KEY],
-                                               self.artist_entry.get_text (),
+                                               self.artist_button.get_value (),
                                                self.title_entry.get_text (),
-                                               self.album_entry.get_text ())
+                                               self.album_button.get_value ())
         except IOError, e:
             # This error in case of tracker returning unexistent files.
             # Uhm.... for instance after removing a memory card we are editing!
@@ -120,9 +116,9 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         song = self.songs_list [self.song_counter]
 
         return not (self.filename_data.get_text() == song[FILE_URI] and
-                    self.artist_entry.get_text () == song[ARTIST_KEY] and
+                    self.artist_button.get_value () == song[ARTIST_KEY] and
                     self.title_entry.get_text () == song[TITLE_KEY] and
-                    self.album_entry.get_text () == song[ALBUM_KEY] )
+                    self.album_button.get_value () == song[ALBUM_KEY] )
         
 
     def __create_view (self):
@@ -134,7 +130,6 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         self.filename_data = gtk.Label ("")
         filename_row.pack_start (self.filename_data, expand=True)
 
-        #play_button = gtk.Button (stock=gtk.STOCK_MEDIA_PLAY)
         play_button = hildon.Button (hildon.BUTTON_STYLE_NORMAL, hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
         img = gtk.image_new_from_stock (gtk.STOCK_MEDIA_PLAY, gtk.ICON_SIZE_BUTTON)
         play_button.set_image (img)
@@ -151,37 +146,41 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         central_panel.pack_start (table, fill=True)
         view_vbox.pack_start (central_panel, expand=True, fill=True)
 
-        # Artist row
-        button_artist = gtk.Button ("Artist:")
-        if (not self.artists_list):
-            button_artist.set_sensitive (False)
-        button_artist.connect ("clicked", self.artist_selection_cb)
-        table.attach (button_artist, 0, 1, 0, 1, 0, gtk.FILL|gtk.EXPAND)
-        self.artist_entry = gtk.Entry()
-        table.attach (self.artist_entry, 1, 2, 0, 1)
-
         # Title row
         label_title = gtk.Label ("Title:")
-        table.attach (label_title, 0, 1, 1, 2, 0)
+        table.attach (label_title, 0, 1, 0, 1, 0)
         self.title_entry = gtk.Entry()
-        table.attach (self.title_entry, 1, 2, 1, 2)
+        table.attach (self.title_entry, 1, 2, 0, 1)
+
+        # Artist row
+        artist_selector = hildon.hildon_touch_selector_entry_new_text ()
+        for a in self.artists_list:
+            artist_selector.append_text (a)
+        self.artist_button = hildon.PickerButton (hildon.BUTTON_STYLE_NORMAL,
+                                                  hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
+        self.artist_button.set_title ("Artist: ")
+        self.artist_button.set_selector (artist_selector)
+        table.attach (self.artist_button, 0, 2, 1, 2)
+
 
         # Album row
-        button_album = gtk.Button ("Album:")
-        if (not self.albums_list):
-            button_album.set_sensitive (False)
-        button_album.connect ("clicked", self.album_selection_cb)
-        table.attach (button_album, 0, 1, 2, 3, 0)
-        self.album_entry = gtk.Entry()
-        table.attach (self.album_entry, 1, 2, 2, 3)
+        album_selector = hildon.hildon_touch_selector_entry_new_text ()
+        for a in self.albums_list:
+            album_selector.append_text (a)
+        self.album_button = hildon.PickerButton (hildon.BUTTON_STYLE_NORMAL,
+                                                 hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
+        self.album_button.set_title ("Album: ")
+        self.album_button.set_selector (album_selector)
+        table.attach (self.album_button, 0, 2, 2, 3) 
+        
 
         # Album art space
-        album_button = gtk.Button ()
+        album_art_button = gtk.Button ()
         self.album_art = gtk.Image ()
         self.album_art.set_size_request (124, 124)
-        album_button.add (self.album_art)
-        album_button.connect ("clicked", self.clicked_album_art)
-        central_panel.pack_start (album_button, expand=False, fill=False)
+        album_art_button.add (self.album_art)
+        album_art_button.connect ("clicked", self.clicked_album_art)
+        central_panel.pack_start (album_art_button, expand=False, fill=False)
         
         # Buttons row
         button_box = gtk.HButtonBox ()
@@ -210,11 +209,30 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         Song is a tuple like (filename, 'Music', title, artist, album, mime)
         """
         assert len (song) == 6
+        
         self.filename_data.set_text (song[FILE_URI])
-        self.artist_entry.set_text (song[ARTIST_KEY])
         self.title_entry.set_text (song[TITLE_KEY])
-        self.album_entry.set_text (song[ALBUM_KEY])
+        
+        try:
+            self.artist_button.set_active (self.artists_list.index(song[ARTIST_KEY]))
+        except ValueError:
+            print "'%s' not in artist list!?" % (song[ARTIST_KEY])
 
+        # Disconnect the value-change signal to avoid extra album art retrievals
+        if (self.album_change_handler != -1):
+            self.album_button.disconnect (self.album_change_handler)
+            self.album_change_handle = -1
+            
+        try:
+            self.album_button.set_active (self.albums_list.index (song[ALBUM_KEY]))
+        except ValueError:
+            print "'%s' is not in the album list!?" % (song[ALBUM_KEY])
+
+        # Reconnect the signal!
+        self.album_change_handler = self.album_button.connect ("value-changed",
+                                                               self.album_selection_cb)
+
+        # Set the album art given the current data
         has_album = False
         if (song[ALBUM_KEY]):
             thumb = album_art_spec.getCoverArtThumbFileName (song[ALBUM_KEY])
@@ -223,7 +241,8 @@ class MussorgskyEditPanel (hildon.StackableWindow):
                 self.album_art.set_from_file (thumb)
                 has_album = True
             else:
-                self.album_callback_id = gobject.idle_add (self.retrieve_album_art, song[ARTIST_KEY], song[ALBUM_KEY])
+                self.album_callback_id = gobject.idle_add (self.retrieve_album_art,
+                                                           song[ARTIST_KEY], song[ALBUM_KEY])
                 
         if (not has_album):
             self.album_art.set_from_stock (gtk.STOCK_CDROM, gtk.ICON_SIZE_DIALOG)
@@ -255,47 +274,17 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         print "implement me, please"
 
     def album_selection_cb (self, widget):
-        if (not self.albums_selector):
-            self.albums_selector = hildon.hildon_touch_selector_new_text ()
-            for album in self.albums_list :
-                self.albums_selector.append_text (album[0])
-
-        if (not self.albums_dialog):
-            self.albums_dialog = hildon.PickerDialog (self)
-            self.albums_dialog.set_title ("Choose album...")
-            self.albums_dialog.set_selector (self.albums_selector)
-
-        response = self.albums_dialog.run ()
-        if (response == gtk.RESPONSE_OK):
-            print "Ok (%s)" % (self.albums_selector.get_current_text ())
-            self.album_entry.set_text (self.albums_selector.get_current_text ())
-        self.albums_dialog.hide ()
-
-    def artist_selection_cb (self, widget):
-        if (not self.artists_selector):
-            self.artists_selector = hildon.hildon_touch_selector_new_text ()
-            for artist in self.artists_list :
-                self.artists_selector.append_text (artist[0])
-                
-        if (not self.artists_dialog):
-            self.artists_dialog = hildon.PickerDialog (self)
-            self.artists_dialog.set_title ("Choose artist...")
-            self.artists_dialog.set_selector (self.artists_selector)
-
-        response = self.artists_dialog.run ()
-
-        if (response == gtk.RESPONSE_OK):
-            print "Ok (%s)" % (self.artists_selector.get_current_text ())
-            self.artist_entry.set_text (str(self.artists_selector.get_current_text ()))
-        self.artists_dialog.hide ()
-
+        song = self.songs_list [self.song_counter]
+        self.retrieve_album_art (song[ARTIST_KEY], widget.get_value ())
+    
 # Testing porpuses
 if __name__ == "__main__":
 
-    TEST_DATA = [("/a/b/c/d.mp3", "Music", "", "title", "album", "audio/mpeg"),
-                 ("/home/user/mufix/dejame.mp3", "Music", "", "title", "album 2", "a/b"),
-		 ("/media/mmc1/Attachments/1-14 Una Rosa Es Una Rosa.m4a", "Music", "", "Una rosa es una rosa", "Ana, Jose, Nacho", "audio/mpeg"),
-                 ("/home/user/mufix/3.mp2", "Music", "", "titlex", "album 3", "audio/mpeg")]
+    TEST_DATA = [("/a/b/c/d.mp3", "Music", "", "title", "Album 9", "audio/mpeg"),
+                 ("/home/user/mufix/a.mp3", "Music", "", "title", "Album 2", "a/b"),
+    		 ("/media/mmc1/Attachments/b.m4a", "Music", "", "b", "Album 9", "audio/mpeg"),
+                 ("/home/user/mufix/3.mp2", "Music", "", "titlex", "Album 3", "audio/mpeg")]
+    #TEST_DATA = []
     ALBUMS = [["Album %d" % i] for i in range (0, 10)]
     ARTISTS = [["Artist %d" % i] for i in range (0, 10)]
     window = MussorgskyEditPanel (TEST_DATA, ALBUMS, ARTISTS)
