@@ -14,7 +14,8 @@ SCRIPTS = ['src/album_art.py',
            'data/mussorgsky']
 
 DATA = [('share/applications/hildon', ['data/mussorgsky.desktop']),
-        ('share/dbus-1/services', ['data/mussorgsky.service'])]
+        ('share/dbus-1/services', ['data/mussorgsky.service']),
+        ('share/pixmaps',['data/mussorgsky-icon.png'])]
  
 setup(name         = 'mussorgsky',
       version      = '0.1',
