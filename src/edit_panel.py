@@ -23,6 +23,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         self.song_counter = 0
         self.album_callback_id = -1
         self.album_change_handler = -1
+        self.artist_change_handler = -1
         self.writer = MutagenBackend ()
         self.player = MediaPlayer ()
         self.album_art_retriever = MussorgskyAlbumArt ()
@@ -213,24 +214,33 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         self.filename_data.set_text (song[FILE_URI])
         self.title_entry.set_text (song[TITLE_KEY])
         
-        try:
-            self.artist_button.set_active (self.artists_list.index(song[ARTIST_KEY]))
-        except ValueError:
-            print "'%s' not in artist list!?" % (song[ARTIST_KEY])
 
         # Disconnect the value-change signal to avoid extra album art retrievals
         if (self.album_change_handler != -1):
             self.album_button.disconnect (self.album_change_handler)
             self.album_change_handle = -1
             
+        if (self.artist_change_handler != -1):
+            self.artist_button.disconnect (self.artist_change_handler)
+            self.artist_change_handle = -1
+
+        # Set values in the picker buttons
+        try:
+            self.artist_button.set_active (self.artists_list.index(song[ARTIST_KEY]))
+        except ValueError:
+            print "'%s' not in artist list!?" % (song[ARTIST_KEY])
+            
         try:
             self.album_button.set_active (self.albums_list.index (song[ALBUM_KEY]))
         except ValueError:
             print "'%s' is not in the album list!?" % (song[ALBUM_KEY])
 
-        # Reconnect the signal!
+        # Reconnect the signals!
         self.album_change_handler = self.album_button.connect ("value-changed",
                                                                self.album_selection_cb)
+
+        self.artist_change_handler = self.album_button.connect ("value-changed",
+                                                                self.artist_selection_cb)
 
         # Set the album art given the current data
         has_album = False
@@ -274,8 +284,26 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         print "implement me, please"
 
     def album_selection_cb (self, widget):
+        """
+        On album change, add the album the local list of albums and the selector
+        if it doesn't exist already. So we show the new entry in the selector next time.
+        """
         song = self.songs_list [self.song_counter]
+        if (not widget.get_value () in self.albums_list):
+            print "Inserting ", widget.get_value ()
+            widget.get_selector ().prepend_text (widget.get_value ())
+            self.albums_list.insert (0, widget.get_value ())
         self.retrieve_album_art (song[ARTIST_KEY], widget.get_value ())
+
+    def artist_selection_cb (self, widget):
+        """
+        On artist change, add the artist the local list of artists and the selector
+        if it doesn't exist already. So we show the new entry in the selector next time
+        """
+        song = self.songs_list [self.song_counter]
+        if (not widget.get_value () in self.artist_list):
+            widget.get_selector ().prepend_text (widget.get_value ())
+            self.artists_list.insert (0, widget.get_value ())
     
 # Testing porpuses
 if __name__ == "__main__":
