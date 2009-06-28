@@ -17,7 +17,14 @@ try:
     pil_available = True
 except ImportError:
     pil_available = False
-    
+
+
+# Set socket timeout
+import socket
+import urllib2
+
+timeout = 5
+socket.setdefaulttimeout(timeout)
 
 LASTFM_APIKEY = "1e1d53528c86406757a6887addef0ace"
 BASE_LASTFM = "http://ws.audioscrobbler.com/2.0/?method=album.getinfo"
@@ -47,14 +54,14 @@ class MussorgskyAlbumArt:
                 print "No thumbnailer available"
                 self.thumbnailer = None
 
-    def get_album_art (self, artist, album):
+    def get_album_art (self, artist, album, force=False):
         """
         Return a tuple (album_art, thumbnail_album_art)
         """
         filename = getCoverArtFileName (album)
         thumbnail = getCoverArtThumbFileName (album)
 
-        if (os.path.exists (filename)):
+        if (os.path.exists (filename) and not force):
             print "Album art already there " + filename
         else:
             online_resource = self.__msn_images (artist, album)
@@ -69,7 +76,7 @@ class MussorgskyAlbumArt:
             else:
                 return (None, None)
 
-        if (os.path.exists (thumbnail)):
+        if (os.path.exists (thumbnail) and not force):
             print "Thumbnail exists " + thumbnail
         else:
             if (not self.__request_thumbnail (filename)):
