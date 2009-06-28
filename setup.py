@@ -4,19 +4,19 @@ from distutils.core import setup
 
 import os
 
-SCRIPTS = ['src/album_art.py',
-           'src/edit_panel.py',
-           'src/mutagen_backend.py',
-           'src/tracker_backend.py',
-           'src/album_art_spec.py',
-           'src/mussorgsky.py',
-           'src/player_backend.py',
-           'src/download_dialog.py',
-           'data/mussorgsky']
+SCRIPTS=  ['data/mussorgsky']
 
 DATA = [('share/applications/hildon', ['data/mussorgsky.desktop']),
         ('share/dbus-1/services', ['data/mussorgsky.service']),
-        ('share/pixmaps',['data/mussorgsky-icon.png'])]
+        ('share/pixmaps',['data/mussorgsky-icon.png']),
+        ('lib/mussorgsky', ['src/album_art.py',
+                            'src/edit_panel.py',
+                            'src/mutagen_backend.py',
+                            'src/tracker_backend.py',
+                            'src/album_art_spec.py',
+                            'src/mussorgsky.py',
+                            'src/player_backend.py',
+                            'src/download_dialog.py'])]
  
 setup(name         = 'mussorgsky',
       version      = '0.1',

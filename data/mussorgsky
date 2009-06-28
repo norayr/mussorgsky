@@ -1,6 +1,6 @@
 #!/bin/sh 
 
-PROGRAM=/usr/bin/mussorgsky.py
+PROGRAM=/usr/lib/mussorgsky/mussorgsky.py
 PYTHON=`which python2.5`
 
 if [ -e /scratchbox ]; then
