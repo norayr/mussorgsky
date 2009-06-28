@@ -41,9 +41,6 @@ class MussorgskyAlbumArtDownloadDialog (gtk.Dialog):
         current = 1
         
         for (artist, album) in artist_albums:
-            self.status_label.set_text ("Retrieving (%d/%d)" % (current, TOTAL))
-            self.current_label.set_markup ("<b>%s - %s</b>" % (artist, album))
-
             while (gtk.events_pending()):
                 gtk.main_iteration()
 
@@ -57,7 +54,10 @@ class MussorgskyAlbumArtDownloadDialog (gtk.Dialog):
                 print str(e)
                 self.album_art.set_from_stock (gtk.STOCK_CDROM, gtk.ICON_SIZE_DIALOG)
                 continue
-                
+
+            self.status_label.set_text ("Retrieved (%d/%d)" % (current, TOTAL))
+            self.current_label.set_markup ("<b>%s - %s</b>" % (artist, album))
+              
             if (thumb):
                 self.album_art.set_from_file (thumb)
             else:
