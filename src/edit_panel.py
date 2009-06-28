@@ -216,31 +216,31 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         
 
         # Disconnect the value-change signal to avoid extra album art retrievals
-        if (self.album_change_handler != -1):
+        if (self.album_button.handler_is_connected (self.album_change_handler)):
             self.album_button.disconnect (self.album_change_handler)
-            self.album_change_handle = -1
             
-        if (self.artist_change_handler != -1):
+        if (self.artist_button.handler_is_connected (self.artist_change_handler)):
             self.artist_button.disconnect (self.artist_change_handler)
-            self.artist_change_handle = -1
 
         # Set values in the picker buttons
         try:
             self.artist_button.set_active (self.artists_list.index(song[ARTIST_KEY]))
         except ValueError:
             print "'%s' not in artist list!?" % (song[ARTIST_KEY])
+            self.artist_button.set_value ("")
             
         try:
             self.album_button.set_active (self.albums_list.index (song[ALBUM_KEY]))
         except ValueError:
             print "'%s' is not in the album list!?" % (song[ALBUM_KEY])
+            self.album_button.set_value ("")
 
         # Reconnect the signals!
         self.album_change_handler = self.album_button.connect ("value-changed",
                                                                self.album_selection_cb)
 
-        self.artist_change_handler = self.album_button.connect ("value-changed",
-                                                                self.artist_selection_cb)
+        self.artist_change_handler = self.artist_button.connect ("value-changed",
+                                                                 self.artist_selection_cb)
 
         # Set the album art given the current data
         has_album = False
@@ -301,20 +301,21 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         if it doesn't exist already. So we show the new entry in the selector next time
         """
         song = self.songs_list [self.song_counter]
-        if (not widget.get_value () in self.artist_list):
+        if (not widget.get_value () in self.artists_list):
+            print "Inserting artist", widget.get_value ()
             widget.get_selector ().prepend_text (widget.get_value ())
             self.artists_list.insert (0, widget.get_value ())
     
 # Testing porpuses
 if __name__ == "__main__":
 
-    TEST_DATA = [("/a/b/c/d.mp3", "Music", "", "title", "Album 9", "audio/mpeg"),
+    TEST_DATA = [("/home/user/Music/dylan.mp3", "Music", "Bob Dylan", "Subterranean homesick blues", "Bring it all back home", "audio/mpeg"),
                  ("/home/user/mufix/a.mp3", "Music", "", "title", "Album 2", "a/b"),
     		 ("/media/mmc1/Attachments/b.m4a", "Music", "", "b", "Album 9", "audio/mpeg"),
                  ("/home/user/mufix/3.mp2", "Music", "", "titlex", "Album 3", "audio/mpeg")]
     #TEST_DATA = []
-    ALBUMS = [["Album %d" % i] for i in range (0, 10)]
-    ARTISTS = [["Artist %d" % i] for i in range (0, 10)]
+    ALBUMS = [["Album %d" % i] for i in range (0, 10)] + [["Bring it all back home"]]
+    ARTISTS = [["Artist %d" % i] for i in range (0, 10)] + [["Bob Dylan"]]
     window = MussorgskyEditPanel (TEST_DATA, ALBUMS, ARTISTS)
     window.connect ("destroy", gtk.main_quit)
     window.show_all ()
