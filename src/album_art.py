@@ -1,16 +1,21 @@
 #!/usr/bin/env python2.5
 import urllib2, urllib
-import libxml2
 import os
 from album_art_spec import getCoverArtFileName, getCoverArtThumbFileName, get_thumb_filename_for_path
 import dbus, time
 import string
 
 try:
+    import libxml2
+    libxml_available = True
+except ImportError:
+    libxml_available = False
+
+try:
     import PIL
     import Image
     pil_available = True
-except ImportException:
+except ImportError:
     pil_available = False
     
 
@@ -70,10 +75,14 @@ class MussorgskyAlbumArt:
                 print "Failed doing thumbnail. Probably album art is not an image!"
                 os.remove (filename)
                 return (None, None)
-
+            
         return (filename, thumbnail)
 
     def __last_fm (self, artist, album):
+
+        if (not libxml_available):
+            return None
+        
         if (not album or len (album) < 1):
             return None
         
