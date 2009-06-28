@@ -59,6 +59,7 @@ class MussorgskyAlbumArt:
         else:
             online_resource = self.__msn_images (artist, album)
             if (online_resource):
+                print "Choosed:", online_resource
                 content = self.__get_url (online_resource)
                 if (content):
                     print "Albumart: %s " % (filename)
@@ -69,7 +70,7 @@ class MussorgskyAlbumArt:
                 return (None, None)
 
         if (os.path.exists (thumbnail)):
-            print "Thumbnail exists"
+            print "Thumbnail exists " + thumbnail
         else:
             if (not self.__request_thumbnail (filename)):
                 print "Failed doing thumbnail. Probably album art is not an image!"
@@ -110,7 +111,7 @@ class MussorgskyAlbumArt:
 
         if (good_album and good_artist):
             full_try = BASE_MSN + good_album + "+" + good_artist + MSN_MEDIUM + MSN_SQUARE
-            print "Retrieving (album + artist): %s" % (full_try)
+            print "Searching (album + artist): %s" % (full_try)
             result = self.__get_url (full_try)
             if (result):
                 return self.__get_first_url_from_msn_results_page (result)
@@ -121,14 +122,14 @@ class MussorgskyAlbumArt:
                 pass
             else:
                 album_try = BASE_MSN + good_album + MSN_MEDIUM + MSN_SQUARE
-                print "Retrieving (album): %s" % (album_try)
+                print "Searching (album): %s" % (album_try)
                 result = self.__get_url (album_try)
                 if (result):
                     return self.__get_first_url_from_msn_results_page (result)
 
         if (artist):
             artist_try = BASE_MSN + good_artist + "+CD+music"  + MSN_SMALL + MSN_SQUARE + MSN_PHOTO
-            print "Retrieving (artist CD): %s" % (artist_try)
+            print "Searching (artist CD): %s" % (artist_try)
             result = self.__get_url (artist_try)
             if (result):
                 return self.__get_first_url_from_msn_results_page (result)
@@ -137,11 +138,26 @@ class MussorgskyAlbumArt:
 
 
     def __get_first_url_from_msn_results_page (self, page):
-        start = page.find ("furl=")
-        if (start == -1):
-            return None
-        end = page.find ("\"", start + len ("furl="))
-        return page [start + len ("furl="): end].replace ("amp;", "")
+
+        current_option = None
+        starting_at = 0
+        security_limit = 20
+
+        while (security_limit > 0):
+            # Iterate until find a jpeg
+            start = page.find ("furl=", starting_at)
+            if (start == -1):
+                return None
+            end = page.find ("\"", start + len ("furl="))
+            current_option = page [start + len ("furl="): end].replace ("amp;", "")
+            if (current_option.lower().endswith (".jpg") or
+                current_option.lower().endswith (".jpeg")):
+                return current_option
+            starting_at = end
+            security_limit -= 1
+        return None
+            
+        
 
     def __clean_string_for_search (self, text):
         if (not text or len (text) < 1):
@@ -192,24 +208,43 @@ class LocalThumbnailer:
                 thumbFile = get_thumb_filename_for_path (fullCoverFileName)
                 try:
                     image = Image.open (fullCoverFileName)
+                    image = image.resize (self.THUMBNAIL_SIZE, Image.ANTIALIAS )
+                    image.save( thumbFile, "JPEG" )
+                    print "Thumbnail: " + thumbFile
                 except IOError, e:
                     print e
                     return False
-                image = image.resize (self.THUMBNAIL_SIZE, Image.ANTIALIAS )
-                image.save( thumbFile, "JPEG" )
-                print "Thumbnail: " + thumbFile
         return True
             
 
 
 if __name__ == "__main__":
     import sys
-    if ( len (sys.argv) > 2):
-        artist = sys.argv[1]
-        album = sys.argv[2]
-    else:
-        print "ARTIST ALBUM"
-        sys.exit (-1)
+    from optparse import OptionParser
 
-    maa = MussorgskyAlbumArt ()
-    maa.get_album_art (artist, album)
+    parser = OptionParser()
+    parser.add_option ("-p", "--print", dest="print_paths",
+                       action="store_true", default=True,
+                       help="Print the destination paths")
+    parser.add_option ("-r", "--retrieve", dest="retrieve",
+                       action="store_true", default=False,
+                       help="Try to retrieve the online content")
+    parser.add_option ("-a", "--artist", dest="artist", type="string",
+                       help="ARTIST to look for", metavar="ARTIST")
+    parser.add_option ("-b", "--album", dest="album", type="string",
+                       help="ALBUM to look for", metavar="ALBUM")
+
+    (options, args) = parser.parse_args ()
+    print options
+    if (not options.artist and not options.album):
+        parser.print_help ()
+        sys.exit (-1)
+        
+    if options.print_paths and not options.retrieve:
+        print "Album art:", getCoverArtFileName (options.album)
+        print "Thumbnail:", getCoverArtThumbFileName (options.album)
+
+        
+    if options.retrieve:
+        maa = MussorgskyAlbumArt ()
+        maa.get_album_art (options.artist, options.album)
