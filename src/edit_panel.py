@@ -154,7 +154,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         table.attach (self.title_entry, 1, 2, 0, 1)
 
         # Artist row
-        artist_selector = hildon.hildon_touch_selector_entry_new_text ()
+        artist_selector = hildon.hildon_touch_selector_new_text ()
         for a in self.artists_list:
             artist_selector.append_text (a)
         self.artist_button = hildon.PickerButton (hildon.BUTTON_STYLE_NORMAL,
@@ -165,7 +165,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
 
 
         # Album row
-        album_selector = hildon.hildon_touch_selector_entry_new_text ()
+        album_selector = hildon.hildon_touch_selector_new_text ()
         for a in self.albums_list:
             album_selector.append_text (a)
         self.album_button = hildon.PickerButton (hildon.BUTTON_STYLE_NORMAL,
