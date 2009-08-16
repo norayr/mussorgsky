@@ -18,7 +18,6 @@ class MussorgskyEditPanel (hildon.StackableWindow):
 
     def __init__ (self, songs_list=None, albums_list=None, artists_list=None):
         hildon.StackableWindow.__init__ (self)
-        self.set_title ("Edit")
         self.set_border_width (12)
         self.song_counter = 0
         self.album_callback_id = -1
@@ -32,7 +31,11 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         self.add (self.__create_view ())
         if (songs_list):
             self.set_songs_list (songs_list)
+        self.update_title ()
         self.banner = None
+
+    def update_title (self):
+        self.set_title ("Edit (%d/%d)" % (self.song_counter+1, len (self.songs_list)))
 
         
     def set_songs_list (self, songs_list):
@@ -59,6 +62,9 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         if (self.song_counter > 0):
             self.song_counter -= 1
             self.set_data_in_view (self.songs_list [self.song_counter])
+            self.update_title ()
+        else:
+            self.destroy ()
 
     def press_next_cb (self, widget):
         if (self.player.is_playing ()):
@@ -78,6 +84,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         if (self.song_counter < len (self.songs_list) -1):
             self.song_counter += 1
             self.set_data_in_view (self.songs_list [self.song_counter])
+            self.update_title ()
         else:
             self.destroy ()
 
