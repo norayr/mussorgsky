@@ -64,6 +64,8 @@ class MussorgskyAlbumArtDownloadDialog (gtk.Dialog):
                 print "Error processing %s - %s" % (artist, album)
                 print str(e)
                 self.album_art.set_from_stock (gtk.STOCK_CDROM, gtk.ICON_SIZE_DIALOG)
+                current += 1
+                it = artist_albums_model.iter_next (it)
                 continue
 
             self.status_label.set_text ("Retrieved (%d/%d)" % (current, TOTAL))
