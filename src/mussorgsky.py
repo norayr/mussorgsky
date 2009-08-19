@@ -3,7 +3,7 @@ import hildon
 import gtk, gobject
 from tracker_backend import TrackerBackend
 from edit_panel import MussorgskyEditPanel
-from download_dialog import MussorgskyAlbumArtDownloadDialog
+from album_art_panel import MussorgskyAlbumArtPanel
 
 class MussorgskyMainWindow (hildon.StackableWindow):
 
@@ -43,18 +43,15 @@ class MussorgskyMainWindow (hildon.StackableWindow):
                                       self.tracker.count_songs_wo_album ())
         return False
 
-    def get_all_album_art (self, user_data):
-        print "Get all album art"
-        artist_album= self.tracker.get_all_pairs_artist_album ()
-        dialog = MussorgskyAlbumArtDownloadDialog (self)
-        dialog.show_all ()
-        dialog.do_the_job (artist_album)
-        
     def browse_clicked (self, widget):
         list_songs = self.tracker.get_all_songs ()
         list_albums = self.tracker.get_list_of_known_albums ()
         list_artists = self.tracker.get_list_of_known_artists ()
         self.show_edit_panel (list_songs, list_albums, list_artists)
+
+    def album_art_clicked (self, widget):
+        panel = MussorgskyAlbumArtPanel ()
+        panel.show_all ()
 
     def create_main_view (self):
         vbox = gtk.VBox (spacing=12, homogeneous=False)
@@ -85,7 +82,7 @@ class MussorgskyMainWindow (hildon.StackableWindow):
         album_art = hildon.Button (hildon.BUTTON_STYLE_NORMAL,
                                    hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
         album_art.set_title ("Album art")
-        album_art.connect ("clicked", self.get_all_album_art)
+        album_art.connect ("clicked", self.album_art_clicked)
         all_songs_row.add (album_art)
 
         vbox.add (all_songs_row)

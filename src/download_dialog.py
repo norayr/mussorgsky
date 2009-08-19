@@ -86,12 +86,6 @@ class MussorgskyAlbumArtDownloadDialog (gtk.Dialog):
 
 if __name__ == "__main__":
 
-    PAIRS_NO = [("Led Zeppelin", "Led Zeppelin IV"),
-             ("Pink Floyd", "The Wall"),
-             ("Deep purple", "Made in Japan"),
-             ("", "Freakin' out"),
-             ("Dinah Washington", "")]
-
     PAIRS_store = gtk.ListStore (str, gtk.gdk.Pixbuf, str, str)
     for i in range (0, 100):
         PAIRS_store.append (("blablabal", None, "Artist %d" % i, "Album %d" %i))
