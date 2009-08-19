@@ -27,20 +27,8 @@ class MussorgskyMainWindow (hildon.StackableWindow):
         print "Waiting to update"
         gobject.timeout_add_seconds (3, self.update_values, None)
 
-    def artists_clicked (self, widget):
-        list_songs = self.tracker.get_songs_without_artist ()
-        list_albums = self.tracker.get_list_of_known_albums ()
-        list_artists = self.tracker.get_list_of_known_artists ()
-        self.show_edit_panel (list_songs, list_albums, list_artists)
-
-    def titles_clicked (self, widget):
-        list_songs = self.tracker.get_songs_without_title ()
-        list_albums = self.tracker.get_list_of_known_albums ()
-        list_artists = self.tracker.get_list_of_known_artists ()
-        self.show_edit_panel (list_songs, list_albums, list_artists)
-
-    def albums_clicked (self, widget):
-        list_songs = self.tracker.get_songs_without_album ()
+    def broken_files_clicked (self, widget):
+        list_songs = self.tracker.get_all_broken_songs ()
         list_albums = self.tracker.get_list_of_known_albums ()
         list_artists = self.tracker.get_list_of_known_artists ()
         self.show_edit_panel (list_songs, list_albums, list_artists)
@@ -69,55 +57,43 @@ class MussorgskyMainWindow (hildon.StackableWindow):
         self.show_edit_panel (list_songs, list_albums, list_artists)
 
     def create_main_view (self):
-        vbox = gtk.VBox (spacing=12)
+        vbox = gtk.VBox (spacing=12, homogeneous=False)
 
-        # Artist row
-        artist_row = gtk.HBox (homogeneous=True)
+        # Labels artist row
         self.label_no_artist = gtk.Label ("")
-        artist_row.add (self.label_no_artist)
-        button_artists = gtk.Button ("Fix empty artists!")
-        button_artists.connect ("clicked", self.artists_clicked)
-        artist_row.add (button_artists)
-    
-        vbox.add (artist_row)
+        vbox.add (self.label_no_artist)
 
-        # Title row
-        title_row = gtk.HBox (homogeneous=True)
         self.label_no_title = gtk.Label ("")
-        title_row.add (self.label_no_title)
-        button_titles = gtk.Button ("Fix empty titles!")
-        button_titles.connect ("clicked", self.titles_clicked)
-        title_row.add (button_titles)
-    
-        vbox.add (title_row)
+        vbox.add (self.label_no_title)
 
-        # Album row
-        album_row = gtk.HBox (homogeneous=True)
         self.label_no_album = gtk.Label ("")
-        album_row.add (self.label_no_album)
-        button_albums = gtk.Button ("Fix empty albums!")
-        button_albums.connect ("clicked", self.albums_clicked)
-        album_row.add (button_albums)
-
-        vbox.add (album_row)
-
-        # All songs row
+        vbox.add (self.label_no_album)
+        
+        # Buttons
         all_songs_row = gtk.HBox (homogeneous=True, spacing=12)
-        album_art = hildon.Button (hildon.BUTTON_STYLE_NORMAL,
-                                hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
-        album_art.set_title ("Get all album art")
-        album_art.connect ("clicked", self.get_all_album_art)
-        all_songs_row.add (album_art)
 
+        button_broken_files = gtk.Button ("Fix metadata!")
+        button_broken_files.connect ("clicked", self.broken_files_clicked)
+        all_songs_row.add (button_broken_files)
+        
         browse = hildon.Button (hildon.BUTTON_STYLE_NORMAL,
                                 hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
-        browse.set_title ("Browse the collection")
+        browse.set_title ("Manage\ncollection")
         browse.connect ("clicked", self.browse_clicked)
         all_songs_row.add (browse)
+
+        album_art = hildon.Button (hildon.BUTTON_STYLE_NORMAL,
+                                   hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
+        album_art.set_title ("Album art")
+        album_art.connect ("clicked", self.get_all_album_art)
+        all_songs_row.add (album_art)
 
         vbox.add (all_songs_row)
 
         return vbox
+
+
+    
 
 if __name__ == "__main__":
 

@@ -36,19 +36,30 @@ class MussorgskyAlbumArtDownloadDialog (gtk.Dialog):
         self.vbox.add (hbox)
 
 
-    def do_the_job (self, artist_albums):
-        TOTAL = len (artist_albums)
+    def do_the_job (self, artist_albums_model):
+        """
+        each row: ("Visible text", pixbuf, Artist, Album)
+        """
+        TOTAL = len (artist_albums_model)
         current = 1
-        
-        for (artist, album) in artist_albums:
+
+        it = artist_albums_model.get_iter_first ()
+        while (it):
+
             while (gtk.events_pending()):
                 gtk.main_iteration()
 
             if (self.cancel):
                 break
+
+            artist = artist_albums_model.get_value (it, 2)
+            album = artist_albums_model.get_value (it, 3)
             
             try:
                 (image, thumb) = self.downloader.get_album_art (artist, album)
+                if thumb:
+                    pixbuf = gtk.gdk.pixbuf_new_from_file_at_size (thumb, 124, 124)
+                    artist_albums_model.set_value (it, 1, pixbuf)
             except LookupError, e:
                 print "Error processing %s - %s" % (artist, album)
                 print str(e)
@@ -64,6 +75,7 @@ class MussorgskyAlbumArtDownloadDialog (gtk.Dialog):
                 self.album_art.set_from_stock (gtk.STOCK_CDROM, gtk.ICON_SIZE_DIALOG)
 
             current += 1
+            it = artist_albums_model.iter_next (it)
 
         
     def handle_response (self, widget, response_id):
@@ -80,12 +92,14 @@ if __name__ == "__main__":
              ("", "Freakin' out"),
              ("Dinah Washington", "")]
 
-    PAIRS = [ ("Artist %d" % i, "Album %d" %i) for i in range (0, 100)]
+    PAIRS_store = gtk.ListStore (str, gtk.gdk.Pixbuf, str, str)
+    for i in range (0, 100):
+        PAIRS_store.append (("blablabal", None, "Artist %d" % i, "Album %d" %i))
 
     def clicked_button (self):
         aadd = MussorgskyAlbumArtDownloadDialog (w)
         aadd.show_all ()
-        aadd.do_the_job (PAIRS)
+        aadd.do_the_job (PAIRS_store)
         
     w = gtk.Window ()
     box = gtk.VBox ()

@@ -21,6 +21,25 @@ RDF_NO_ARTIST = RDF_NO_PROPX % "Audio:Artist"
 RDF_NO_ALBUM = RDF_NO_PROPX % "Audio:Album"
 RDF_NO_TITLE = RDF_NO_PROPX % "Audio:Title"
 
+RDF_ANY_MISSING_METADATA = """
+<rdfq:Condition>
+  <rdfq:or>
+    <rdfq:equals>
+      <rdfq:Property name="Audio:Artist" />
+      <rdf:String></rdf:String> 
+    </rdfq:equals>
+    <rdfq:equals>
+      <rdfq:Property name="Audio:Title" />
+      <rdf:String></rdf:String> 
+    </rdfq:equals>
+    <rdfq:equals>
+      <rdfq:Property name="Audio:Album" />
+      <rdf:String></rdf:String> 
+    </rdfq:equals>
+  </rdfq:or>
+</rdfq:Condition>
+"""
+
 
 class TrackerBackend:
 
@@ -54,28 +73,13 @@ class TrackerBackend:
                                            [], False, 0, 32000)
         return results
 
-
-    def get_songs_without_artist (self):
+    def get_all_broken_songs (self):
         """
         Return tuples with the following fields:
         (uri, "Music", artist, title, album, mimetype)
         """
-        return self.__run_rdf_query (RDF_NO_ARTIST)
+        return self.__run_rdf_query (RDF_ANY_MISSING_METADATA)
     
-    def get_songs_without_title (self):
-        """
-        Return tuples with the following fields:
-        (uri, "Music", artist, title, album, mimetype)
-        """
-        return self.__run_rdf_query (RDF_NO_TITLE)
-    
-    def get_songs_without_album (self):
-        """
-        Return tuples with the following fields:
-        (uri, "Music", artist, title, album, mimetype)
-        """
-        return self.__run_rdf_query (RDF_NO_ALBUM)
-
     def get_all_songs (self):
         return self.__run_rdf_query ("")
 
