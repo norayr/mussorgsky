@@ -58,9 +58,9 @@ class MussorgskyAlbumArtDownloadDialog (gtk.Dialog):
             try:
                 (image, thumb) = self.downloader.get_album_art (artist, album)
                 if thumb:
-                    pixbuf = gtk.gdk.pixbuf_new_from_file_at_size (thumb, 124, 124)
-                    artist_albums_model.set_value (it, 1, pixbuf)
-            except LookupError, e:
+                        pixbuf = gtk.gdk.pixbuf_new_from_file_at_size (thumb, 124, 124)
+                        artist_albums_model.set_value (it, 1, pixbuf)
+            except Exception, e:
                 print "Error processing %s - %s" % (artist, album)
                 print str(e)
                 self.album_art.set_from_stock (gtk.STOCK_CDROM, gtk.ICON_SIZE_DIALOG)
