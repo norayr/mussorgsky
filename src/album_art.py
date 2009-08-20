@@ -36,6 +36,7 @@ MSN_SMALL = "+filterui:imagesize-medium"
 MSN_SQUARE = "+filterui:aspect-square"
 MSN_PHOTO = "+filterui:photo-graphics"
 
+CACHE_LOCATION = os.path.join (os.getenv ("HOME"), ".cache", "mussorgsky")
 # LastFM:
 # http://www.lastfm.es/api/show?service=290
 #
@@ -44,6 +45,10 @@ class MussorgskyAlbumArt:
     def __init__ (self):
         bus = dbus.SessionBus ()
         handle = time.time()
+
+        if (not os.path.exists (CACHE_LOCATION)):
+            os.makedirs (CACHE_LOCATION)
+            
         if (pil_available):
             self.thumbnailer = LocalThumbnailer ()
         else:
@@ -61,20 +66,23 @@ class MussorgskyAlbumArt:
         filename = getCoverArtFileName (album)
         thumbnail = getCoverArtThumbFileName (album)
 
+        album_art_available = False
         if (os.path.exists (filename) and not force):
             print "Album art already there " + filename
+            album_art_available = True
         else:
-            online_resource = self.__msn_images (artist, album)
-            if (online_resource):
+            results_page = self.__msn_images (artist, album)
+            for online_resource in self.__get_url_from_msn_results_page (results_page):
                 print "Choosed:", online_resource
                 content = self.__get_url (online_resource)
                 if (content):
                     print "Albumart: %s " % (filename)
                     self.__save_content_into_file (content, filename)
-                else:
-                    return (None, None)
-            else:
-                return (None, None)
+                    album_art_available = True
+                    break
+
+        if (not album_art_available):
+            return (None, None)
 
         if (os.path.exists (thumbnail) and not force):
             print "Thumbnail exists " + thumbnail
@@ -85,6 +93,35 @@ class MussorgskyAlbumArt:
                 return (None, None)
             
         return (filename, thumbnail)
+
+
+    def get_alternatives (self, artist, album, no_alternatives):
+        """
+        return a list of paths of possible album arts
+        """
+        results_page = self.__msn_images (artist, album)
+        valid_images = []
+        for image_url in self.__get_url_from_msn_results_page (results_page):
+            image = self.__get_url (image_url)
+            if (image):
+                image_path = os.path.join (CACHE_LOCATION, "alternative-" + str(len(valid_images)))
+                self.__save_content_into_file (image, image_path)
+                valid_images.append (image_path)
+                if (len (valid_images) > no_alternatives):
+                    return valid_images
+        return valid_images
+
+    def save_alternative (self, artist, album, path):
+        if (not os.path.exists (path)):
+            print "**** CRITICAL **** image in path", path, "doesn't exist!"
+
+        filename = getCoverArtFileName (album)
+        thumbnail = getCoverArtThumbFileName (album)
+
+        os.rename (path, filename)
+        if (not self.__request_thumbnail (filename)):
+            print "Something wrong creating the thumbnail!"
+        
 
     def __last_fm (self, artist, album):
 
@@ -120,8 +157,7 @@ class MussorgskyAlbumArt:
             full_try = BASE_MSN + good_album + "+" + good_artist + MSN_MEDIUM + MSN_SQUARE
             print "Searching (album + artist): %s" % (full_try)
             result = self.__get_url (full_try)
-            if (result):
-                return self.__get_first_url_from_msn_results_page (result)
+            return result
 
         if (album):
             if (album.lower ().find ("greatest hit") != -1):
@@ -131,39 +167,38 @@ class MussorgskyAlbumArt:
                 album_try = BASE_MSN + good_album + MSN_MEDIUM + MSN_SQUARE
                 print "Searching (album): %s" % (album_try)
                 result = self.__get_url (album_try)
-                if (result):
-                    return self.__get_first_url_from_msn_results_page (result)
-
+                return result
+            
         if (artist):
             artist_try = BASE_MSN + good_artist + "+CD+music"  + MSN_SMALL + MSN_SQUARE + MSN_PHOTO
             print "Searching (artist CD): %s" % (artist_try)
             result = self.__get_url (artist_try)
-            if (result):
-                return self.__get_first_url_from_msn_results_page (result)
-            
+            return result
+        
         return None
 
 
-    def __get_first_url_from_msn_results_page (self, page):
+    def __get_url_from_msn_results_page (self, page):
+
+        if (not page):
+            return
 
         current_option = None
         starting_at = 0
-        security_limit = 20
 
-        while (security_limit > 0):
+        # 500 is just a safe limit
+        for i in range (0, 500):
             # Iterate until find a jpeg
             start = page.find ("furl=", starting_at)
             if (start == -1):
-                return None
+                yield None
             end = page.find ("\"", start + len ("furl="))
             current_option = page [start + len ("furl="): end].replace ("amp;", "")
             if (current_option.lower().endswith (".jpg") or
                 current_option.lower().endswith (".jpeg")):
-                return current_option
+                yield current_option
             starting_at = end
-            security_limit -= 1
-        return None
-            
+        yield None
         
 
     def __clean_string_for_search (self, text):
@@ -236,6 +271,9 @@ if __name__ == "__main__":
     parser.add_option ("-r", "--retrieve", dest="retrieve",
                        action="store_true", default=False,
                        help="Try to retrieve the online content")
+    parser.add_option ("-m", "--multiple", dest="multiple",
+                       action="store_true", default=False,
+                       help="Show more than one option")
     parser.add_option ("-a", "--artist", dest="artist", type="string",
                        help="ARTIST to look for", metavar="ARTIST")
     parser.add_option ("-b", "--album", dest="album", type="string",
@@ -246,12 +284,22 @@ if __name__ == "__main__":
     if (not options.artist and not options.album):
         parser.print_help ()
         sys.exit (-1)
+
+    if (options.multiple and options.retrieve):
+        print "Multiple and retrieve are incompatible"
+        parser.print_help ()
+        sys.exit (-1)
         
     if options.print_paths and not options.retrieve:
         print "Album art:", getCoverArtFileName (options.album)
         print "Thumbnail:", getCoverArtThumbFileName (options.album)
 
-        
     if options.retrieve:
         maa = MussorgskyAlbumArt ()
         maa.get_album_art (options.artist, options.album)
+
+    if options.multiple:
+        maa = MussorgskyAlbumArt ()
+        alt = maa.get_alternatives (options.artist, options.album, 5)
+        for a in alt:
+            print a
