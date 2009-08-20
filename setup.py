@@ -17,7 +17,8 @@ DATA = [('share/applications/hildon', ['data/mussorgsky.desktop']),
                             'src/mussorgsky.py',
                             'src/mutagen_backend.py',                            
                             'src/player_backend.py',
-                            'src/tracker_backend.py'])]
+                            'src/tracker_backend.py',
+                            'src/utils.py'])]
  
 setup(name         = 'mussorgsky',
       version      = '0.1',
