@@ -1,6 +1,7 @@
 #!/usr/bin/env python2.5
 import gtk, gobject
 from album_art import MussorgskyAlbumArt
+from utils import escape_html
 
 class MussorgskyAlbumArtDownloadDialog (gtk.Dialog):
 
@@ -68,8 +69,9 @@ class MussorgskyAlbumArtDownloadDialog (gtk.Dialog):
                 it = artist_albums_model.iter_next (it)
                 continue
 
-            self.status_label.set_text ("Retrieved (%d/%d)" % (current, TOTAL))
-            self.current_label.set_markup ("<b>%s - %s</b>" % (artist, album))
+            #self.status_label.set_text ("Retrieved (%d/%d)" % (current, TOTAL))
+            self.set_title ("Downloading album art (%d/%d)" % (current, TOTAL))
+            self.current_label.set_markup ("<b>%s - %s</b>" % (escape_html(artist), escape_html(album)))
               
             if (thumb):
                 self.album_art.set_from_file (thumb)
