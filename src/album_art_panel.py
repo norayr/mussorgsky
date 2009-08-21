@@ -3,14 +3,7 @@ import hildon
 import gtk, gobject
 from album_art_spec import getCoverArtThumbFileName
 from download_dialog import MussorgskyAlbumArtDownloadDialog
-
-def escape_html (text):
-    if (len (text) > 40):
-        cutpoint = text.find (' ', 30)
-        if (cutpoint == -1 or cutpoint > 40):
-            cutpoint = 40
-        text = text [0:cutpoint] + "..."
-    return text.replace ("&","&amp;").replace ("<", "&lt;").replace (">", "&gt;").replace ("\"", "&quot;")
+from utils import escape_html
 
 class MussorgskyAlbumArtPanel (hildon.StackableWindow):
 
@@ -31,7 +24,6 @@ class MussorgskyAlbumArtPanel (hildon.StackableWindow):
                 pixbuf = None
             t = ("<b>%s</b>\n<small>%s</small>" % (escape_html(p[1]), escape_html(p[0])), pixbuf, p[0], p[1])
             self.model.append (t)
-                
             
         self.treeview.set_model (self.model)
 
@@ -72,7 +64,8 @@ class MussorgskyAlbumArtPanel (hildon.StackableWindow):
     def row_activated_cb (self, treeview, path, view_colum):
         print "Get alternatives for..."
         it = treeview.get_model ().get_iter (path)
-        print treeview.get_model ().get_value (it, 3)
+        album = treeview.get_model ().get_value (it, 3)
+        artist = treeview.get_model ().get_value (it, 2)
 
 
 
