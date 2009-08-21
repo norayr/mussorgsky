@@ -102,6 +102,10 @@ class MussorgskyAlbumArt:
         results_page = self.__msn_images (artist, album)
         valid_images = []
         for image_url in self.__get_url_from_msn_results_page (results_page):
+            if (not image_url):
+                # Some searches doesn't return anything at all!
+                break
+            
             image = self.__get_url (image_url)
             if (image):
                 image_path = os.path.join (CACHE_LOCATION, "alternative-" + str(len(valid_images)))
@@ -112,16 +116,17 @@ class MussorgskyAlbumArt:
         return valid_images
 
     def save_alternative (self, artist, album, path):
-        if (not os.path.exists (path)):
+        if not os.path.exists (path):
             print "**** CRITICAL **** image in path", path, "doesn't exist!"
-
+            return (None, None)
+        
         filename = getCoverArtFileName (album)
         thumbnail = getCoverArtThumbFileName (album)
 
         os.rename (path, filename)
         if (not self.__request_thumbnail (filename)):
             print "Something wrong creating the thumbnail!"
-        
+        return (filename, thumbnail)
 
     def __last_fm (self, artist, album):
 
@@ -157,7 +162,8 @@ class MussorgskyAlbumArt:
             full_try = BASE_MSN + good_album + "+" + good_artist + MSN_MEDIUM + MSN_SQUARE
             print "Searching (album + artist): %s" % (full_try)
             result = self.__get_url (full_try)
-            return result
+            if (result.find ("no_results") == -1):
+                return result
 
         if (album):
             if (album.lower ().find ("greatest hit") != -1):
@@ -167,13 +173,15 @@ class MussorgskyAlbumArt:
                 album_try = BASE_MSN + good_album + MSN_MEDIUM + MSN_SQUARE
                 print "Searching (album): %s" % (album_try)
                 result = self.__get_url (album_try)
-                return result
+                if (result.find ("no_results") == -1):
+                    return result
             
         if (artist):
             artist_try = BASE_MSN + good_artist + "+CD+music"  + MSN_SMALL + MSN_SQUARE + MSN_PHOTO
             print "Searching (artist CD): %s" % (artist_try)
             result = self.__get_url (artist_try)
-            return result
+            if (result.find ("no_results") == -1):
+                return result
         
         return None
 
