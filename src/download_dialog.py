@@ -14,10 +14,10 @@ class MussorgskyAlbumArtDownloadDialog (gtk.Dialog):
         self.downloader = MussorgskyAlbumArt ()
         self.set_title ("Downloading album art")
         self.connect ("response", self.handle_response)
-        self.create_view ()
+        self.__create_view ()
         self.cancel = False
 
-    def create_view (self):
+    def __create_view (self):
 
         hbox = gtk.HBox (homogeneous=False)
 
