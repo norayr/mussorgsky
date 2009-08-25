@@ -3,7 +3,6 @@ import hildon
 import gtk, gobject
 from album_art_spec import getCoverArtThumbFileName
 from download_dialog import MussorgskyAlbumArtDownloadDialog
-from album_art import MussorgskyAlbumArt
 from utils import escape_html
 from aa_selection_dialog import AlbumArtSelectionDialog
 
@@ -68,19 +67,13 @@ class MussorgskyAlbumArtPanel (hildon.StackableWindow):
         it = treeview.get_model ().get_iter (path)
         album = treeview.get_model ().get_value (it, 3)
         artist = treeview.get_model ().get_value (it, 2)
-        if (not self.downloader):
-            self.downloader = MussorgskyAlbumArt ()
-        
-        dialog = AlbumArtSelectionDialog (self, 4)    
-        dialog.show_all ()
 
-        paths = self.downloader.get_alternatives (album, artist, 4)        
-        dialog.populate (paths)
+        dialog = AlbumArtSelectionDialog (self, artist, album, 4)
+        dialog.show_all ()
         
         response = dialog.run ()
         if (response > -1):
-            assert response < len (paths)
-            (img, thumb) = self.downloader.save_alternative (artist, album, paths[response])
+            (img, thumb) = dialog.get_selection ()
             pixbuf = gtk.gdk.pixbuf_new_from_file_at_size (thumb, 64, 64)
             treeview.get_model ().set (it, 1, pixbuf)
         dialog.destroy ()
