@@ -1,5 +1,6 @@
 import hildon
 import gtk
+import gobject
 from album_art import MussorgskyAlbumArt
 
 class AlbumArtSelectionDialog (gtk.Dialog):
@@ -22,11 +23,11 @@ class AlbumArtSelectionDialog (gtk.Dialog):
             self.downloader = downloader
         else:
             self.downloader = MussorgskyAlbumArt ()
-        self.paths = self.downloader.get_alternatives (album, artist, 4)
+
+        gobject.idle_add (self.__get_alternatives_async)
         self.selection_img = None
         self.selection_thumb = None
-        self.__populate (self.paths)
-
+        hildon.hildon_gtk_window_set_progress_indicator (self, 1)
 
     def __create_view (self, size):
         hbox = gtk.HBox (homogeneous=True)
@@ -47,6 +48,11 @@ class AlbumArtSelectionDialog (gtk.Dialog):
             hbox.pack_start (event_box, expand=False, fill=True)
 
         self.vbox.add (hbox)
+
+    def __get_alternatives_async (self):
+        self.paths = self.downloader.get_alternatives (self.album, self.artist, 4)
+        self.__populate (self.paths)        
+        hildon.hildon_gtk_window_set_progress_indicator (self, 0)
 
     def __populate (self, paths):
 
@@ -70,17 +76,19 @@ class AlbumArtSelectionDialog (gtk.Dialog):
 
 if __name__ == "__main__":
 
+    import time
     class MockDownloader:
         def __init__ (self):
             self.alt = ["../hendrix.jpeg", "../hoover.jpeg", "../dylan.jpeg"]
         def get_alternatives (self, album, artist, amount):
+            time.sleep (5)
             return self.alt [0:amount]
         def save_alternative (self, artist, album, img):
             return ("/home/user/.cache/media-art/" + img, "/home/user/.thumbnails/normal/" + img)
                               
 
     def clicked_button (self):
-        aadd = AlbumArtSelectionDialog (w, "rory gallagher", "irish tour", 4, MockDownloader (ALTERNATIVES))
+        aadd = AlbumArtSelectionDialog (w, "rory gallagher", "irish tour", 4, MockDownloader ())
         aadd.show_all ()
         response = aadd.run ()
         if response == gtk.RESPONSE_CLOSE or response == gtk.RESPONSE_DELETE_EVENT or response == gtk.RESPONSE_REJECT:
