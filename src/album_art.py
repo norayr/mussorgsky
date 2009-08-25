@@ -14,10 +14,9 @@ except ImportError:
 try:
     import PIL
     import Image
-    pil_available = True
 except ImportError:
-    pil_available = False
-
+    print "Please install python-imaging package"
+    sys.exit (-1)
 
 # Set socket timeout
 import socket
@@ -49,15 +48,7 @@ class MussorgskyAlbumArt:
         if (not os.path.exists (CACHE_LOCATION)):
             os.makedirs (CACHE_LOCATION)
             
-        if (pil_available):
-            self.thumbnailer = LocalThumbnailer ()
-        else:
-            try:
-                self.thumbnailer = bus.get_object ('org.freedesktop.thumbnailer',
-                                                   '/org/freedesktop/thumbnailer/Generic')
-            except dbus.exceptions.DBusException:
-                print "No thumbnailer available"
-                self.thumbnailer = None
+        self.thumbnailer = LocalThumbnailer ()
 
     def get_album_art (self, artist, album, force=False):
         """
@@ -95,37 +86,41 @@ class MussorgskyAlbumArt:
         return (filename, thumbnail)
 
 
-    def get_alternatives (self, artist, album, no_alternatives):
+    def get_alternatives (self, artist, album, max_alternatives=4):
         """
         return a list of paths of possible album arts
         """
+        counter = 0
         results_page = self.__msn_images (artist, album)
-        valid_images = []
         for image_url in self.__get_url_from_msn_results_page (results_page):
             if (not image_url):
                 # Some searches doesn't return anything at all!
                 break
+
+            if (counter >= max_alternatives):
+                break
             
             image = self.__get_url (image_url)
             if (image):
-                image_path = os.path.join (CACHE_LOCATION, "alternative-" + str(len(valid_images)))
+                image_path = os.path.join (CACHE_LOCATION, "alternative-" + str(counter))
+                thumb_path = os.path.join (CACHE_LOCATION, "alternative-" + str(counter) + "thumb")
                 self.__save_content_into_file (image, image_path)
-                valid_images.append (image_path)
-                if (len (valid_images) > no_alternatives):
-                    return valid_images
-        return valid_images
+                self.thumbnailer.create (image_path, thumb_path)
+                counter += 1
+                yield (image_path, thumb_path)
 
-    def save_alternative (self, artist, album, path):
-        if not os.path.exists (path):
+
+    def save_alternative (self, artist, album, img_path, thumb_path):
+        if not os.path.exists (img_path) or not os.path.exists (thumb_path):
             print "**** CRITICAL **** image in path", path, "doesn't exist!"
             return (None, None)
         
         filename = getCoverArtFileName (album)
         thumbnail = getCoverArtThumbFileName (album)
 
-        os.rename (path, filename)
-        if (not self.__request_thumbnail (filename)):
-            print "Something wrong creating the thumbnail!"
+        os.rename (img_path, filename)
+        os.rename (thumb_path, thumbnail)
+
         return (filename, thumbnail)
 
     def __last_fm (self, artist, album):
@@ -162,7 +157,7 @@ class MussorgskyAlbumArt:
             full_try = BASE_MSN + good_album + "+" + good_artist + MSN_MEDIUM + MSN_SQUARE
             print "Searching (album + artist): %s" % (full_try)
             result = self.__get_url (full_try)
-            if (result.find ("no_results") == -1):
+            if (result and result.find ("no_results") == -1):
                 return result
 
         if (album):
@@ -173,14 +168,14 @@ class MussorgskyAlbumArt:
                 album_try = BASE_MSN + good_album + MSN_MEDIUM + MSN_SQUARE
                 print "Searching (album): %s" % (album_try)
                 result = self.__get_url (album_try)
-                if (result.find ("no_results") == -1):
+                if (result and result.find ("no_results") == -1):
                     return result
             
         if (artist):
             artist_try = BASE_MSN + good_artist + "+CD+music"  + MSN_SMALL + MSN_SQUARE + MSN_PHOTO
             print "Searching (artist CD): %s" % (artist_try)
             result = self.__get_url (artist_try)
-            if (result.find ("no_results") == -1):
+            if (result and result.find ("no_results") == -1):
                 return result
         
         return None
@@ -206,7 +201,6 @@ class MussorgskyAlbumArt:
                 current_option.lower().endswith (".jpeg")):
                 yield current_option
             starting_at = end
-        yield None
         
 
     def __clean_string_for_search (self, text):
@@ -237,12 +231,8 @@ class MussorgskyAlbumArt:
             return None
 
     def __request_thumbnail (self, filename):
-        if (not self.thumbnailer):
-            print "No thumbnailer available"
-            return
-        uri = "file://" + filename
-        handle = time.time ()
-        return self.thumbnailer.Queue ([uri], ["image/jpeg"], dbus.UInt32 (handle))
+        thumbFile = get_thumb_filename_for_path (fullCoverFileName)
+        return self.thumbnailer.create (filename, thumbFile)
             
 
 
@@ -250,20 +240,16 @@ class LocalThumbnailer:
     def __init__ (self):
         self.THUMBNAIL_SIZE = (124,124)
 
-    def Queue (self, uris, mimes, handle):
-        for i in range (0, len(uris)):
-            uri = uris[i]
-            fullCoverFileName = uri[7:]
-            if (os.path.exists (fullCoverFileName)):
-                thumbFile = get_thumb_filename_for_path (fullCoverFileName)
-                try:
-                    image = Image.open (fullCoverFileName)
-                    image = image.resize (self.THUMBNAIL_SIZE, Image.ANTIALIAS )
-                    image.save( thumbFile, "JPEG" )
-                    print "Thumbnail: " + thumbFile
-                except IOError, e:
-                    print e
-                    return False
+    def create (self, fullCoverFileName, thumbFile):
+        if (os.path.exists (fullCoverFileName)):
+            try:
+                image = Image.open (fullCoverFileName)
+                image = image.resize (self.THUMBNAIL_SIZE, Image.ANTIALIAS )
+                image.save (thumbFile, "JPEG")
+                print "Thumbnail: " + thumbFile
+            except IOError, e:
+                print e
+                return False
         return True
             
 
@@ -308,6 +294,6 @@ if __name__ == "__main__":
 
     if options.multiple:
         maa = MussorgskyAlbumArt ()
-        alt = maa.get_alternatives (options.artist, options.album, 5)
-        for a in alt:
-            print a
+        for (img, thumb) in  maa.get_alternatives (options.artist, options.album, 5):
+            print img
+            print thumb

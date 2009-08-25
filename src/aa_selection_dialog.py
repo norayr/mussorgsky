@@ -17,6 +17,7 @@ class AlbumArtSelectionDialog (gtk.Dialog):
         self.artist = artist
         self.album = album
         self.size = size
+        self.paths = []
         self.__create_view (size)
 
         if (downloader):
@@ -28,6 +29,7 @@ class AlbumArtSelectionDialog (gtk.Dialog):
         self.selection_img = None
         self.selection_thumb = None
         hildon.hildon_gtk_window_set_progress_indicator (self, 1)
+
 
     def __create_view (self, size):
         hbox = gtk.HBox (homogeneous=True)
@@ -50,23 +52,27 @@ class AlbumArtSelectionDialog (gtk.Dialog):
         self.vbox.add (hbox)
 
     def __get_alternatives_async (self):
-        self.paths = self.downloader.get_alternatives (self.album, self.artist, 4)
-        self.__populate (self.paths)        
+        counter = 0
+        for (path, thumb) in self.downloader.get_alternatives (self.album, self.artist, self.size):
+            self.paths.insert (counter, (path, thumb))
+            self.images[counter].set_from_file (thumb)
+            self.event_boxes [counter].set_sensitive (True)
+            counter += 1
+            while (gtk.events_pending()):
+                gtk.main_iteration()
+
+        while (counter < self.size):
+                self.images[counter].set_from_stock (gtk.STOCK_CDROM, gtk.ICON_SIZE_DIALOG)
+                counter += 1
+                
         hildon.hildon_gtk_window_set_progress_indicator (self, 0)
 
-    def __populate (self, paths):
-
-        for i in range (0, self.size):
-            if (len(paths) > i):
-                self.images[i].set_from_file (paths[i])
-                self.event_boxes[i].set_sensitive (True)
-            else:
-                self.images[i].set_from_stock (gtk.STOCK_CDROM, gtk.ICON_SIZE_DIALOG)
 
     def click_on_img (self, widget, event, position):
+        img, thumb = self.paths[position]
         self.selection_img, self.selection_thumb = self.downloader.save_alternative (self.artist,
                                                                                      self.album,
-                                                                                     self.paths[position])
+                                                                                     img, thumb)
         self.response (position)
 
     def get_selection (self):
@@ -79,12 +85,16 @@ if __name__ == "__main__":
     import time
     class MockDownloader:
         def __init__ (self):
-            self.alt = ["../hendrix.jpeg", "../hoover.jpeg", "../dylan.jpeg"]
+            self.alt = [("../hendrix.jpeg", "../hendrix-thumb.jpeg"),
+                        ("../hoover.jpeg", "../hoover-thumb.jpeg"),
+                        ("../backbeat.jpeg", "../backbeat-thumb.jpeg"),
+                        ("../dylan.jpeg", "../dylan-thumb.jpeg")]
         def get_alternatives (self, album, artist, amount):
-            time.sleep (5)
-            return self.alt [0:amount]
-        def save_alternative (self, artist, album, img):
-            return ("/home/user/.cache/media-art/" + img, "/home/user/.thumbnails/normal/" + img)
+            for a in self.alt:
+                time.sleep (1)
+                yield a
+        def save_alternative (self, artist, album, img, thumb):
+            return ("/home/user/.cache/media-art/" + img, "/home/user/.thumbnails/normal/" + thumb)
                               
 
     def clicked_button (self):

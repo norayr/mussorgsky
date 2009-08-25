@@ -68,7 +68,7 @@ class MussorgskyAlbumArtPanel (hildon.StackableWindow):
         album = treeview.get_model ().get_value (it, 3)
         artist = treeview.get_model ().get_value (it, 2)
 
-        dialog = AlbumArtSelectionDialog (self, artist, album, 4)
+        dialog = AlbumArtSelectionDialog (self, artist, album, 5)
         dialog.show_all ()
         
         response = dialog.run ()
