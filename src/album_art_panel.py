@@ -74,8 +74,9 @@ class MussorgskyAlbumArtPanel (hildon.StackableWindow):
         response = dialog.run ()
         if (response > -1):
             (img, thumb) = dialog.get_selection ()
-            pixbuf = gtk.gdk.pixbuf_new_from_file_at_size (thumb, 64, 64)
-            treeview.get_model ().set (it, 1, pixbuf)
+            if img and thumb:
+                pixbuf = gtk.gdk.pixbuf_new_from_file_at_size (thumb, 64, 64)
+                treeview.get_model ().set (it, 1, pixbuf)
         dialog.destroy ()
             
 if __name__ == "__main__":
