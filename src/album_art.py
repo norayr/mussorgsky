@@ -231,7 +231,7 @@ class MussorgskyAlbumArt:
             return None
 
     def __request_thumbnail (self, filename):
-        thumbFile = get_thumb_filename_for_path (fullCoverFileName)
+        thumbFile = get_thumb_filename_for_path (filename)
         return self.thumbnailer.create (filename, thumbFile)
             
 
