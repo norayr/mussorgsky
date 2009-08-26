@@ -19,6 +19,8 @@ class AlbumArtSelectionDialog (gtk.Dialog):
         self.size = size
         self.paths = []
         self.__create_view (size)
+        self.cancel = False
+        self.connect ("response", self.handle_response)
 
         if (downloader):
             self.downloader = downloader
@@ -54,7 +56,10 @@ class AlbumArtSelectionDialog (gtk.Dialog):
     def __get_alternatives_async (self):
         counter = 0
         for (path, thumb) in self.downloader.get_alternatives (self.album, self.artist, self.size):
+            if (self.cancel):
+                return False
             self.paths.insert (counter, (path, thumb))
+            print "Setting", thumb, "as image"
             self.images[counter].set_from_file (thumb)
             self.event_boxes [counter].set_sensitive (True)
             counter += 1
@@ -79,6 +84,10 @@ class AlbumArtSelectionDialog (gtk.Dialog):
         return (self.selection_img, self.selection_thumb)
 
     
+    def handle_response (self, widget, response_id):
+        self.cancel = True
+        # Return False to continue propagating the signal
+        return False
 
 if __name__ == "__main__":
 
