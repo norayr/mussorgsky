@@ -1,3 +1,11 @@
+mussorgsky (0.2-1) unstable; urgency=low
+
+  * Release 0.2
+  * Changed first screen options
+  * Allow to select album art per album
+
+ -- Ivan Frade <ivan.frade@gmail.com>  Tue, 27 Aug 2009 01:03:59 +0300
+
 mussorgsky (0.1-1) unstable; urgency=low
 
   * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>

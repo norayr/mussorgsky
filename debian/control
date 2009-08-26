@@ -13,7 +13,6 @@ Depends: ${python:Depends}, python-mutagen,
  python-hildon, python-dbus, tracker, python-gst0.10,
  python2.5-gobject, python-imaging
 Optional: python2.5-libxml2
-XB-Python-Version: current, >=2.5
 Description: Music Organizer, audio files metadata editor
  Mussorgsky is a tool to set the basic metadata in the audio files 
  so the music collection management can be done completely on the 

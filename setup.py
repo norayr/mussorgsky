@@ -22,7 +22,7 @@ DATA = [('share/applications/hildon', ['data/mussorgsky.desktop']),
                             'src/utils.py'])]
  
 setup(name         = 'mussorgsky',
-      version      = '0.1',
+      version      = '0.2',
       description  = 'Music Organizer: metadata editor',
       author       = 'Ivan Frade',
       author_email = '<ivan.frade@gmail.com>',
