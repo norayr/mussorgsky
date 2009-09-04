@@ -1,9 +1,10 @@
 #!/usr/bin/env python2.5
-import urllib2, urllib
 import os
 from album_art_spec import getCoverArtFileName, getCoverArtThumbFileName, get_thumb_filename_for_path
+from utils import UrllibWrapper
 import dbus, time
 import string
+import urllib
 
 try:
     import libxml2
@@ -18,12 +19,6 @@ except ImportError:
     print "Please install python-imaging package"
     sys.exit (-1)
 
-# Set socket timeout
-import socket
-import urllib2
-
-timeout = 5
-socket.setdefaulttimeout(timeout)
 
 LASTFM_APIKEY = "1e1d53528c86406757a6887addef0ace"
 BASE_LASTFM = "http://ws.audioscrobbler.com/2.0/?method=album.getinfo"
@@ -39,16 +34,43 @@ CACHE_LOCATION = os.path.join (os.getenv ("HOME"), ".cache", "mussorgsky")
 # LastFM:
 # http://www.lastfm.es/api/show?service=290
 #
+
+
+import threading
+class AADownloadThread (threading.Thread):
+
+    def __init__ (self, url, counter):
+        threading.Thread.__init__ (self, target=self.grab_image, args=(url,))
+        self.thumbnailer = LocalThumbnailer ()
+        self.counter = counter
+        self.image_path = None
+        self.thumb_path = None
+        self.urllib_wrapper = UrllibWrapper ()
+
+    def grab_image (self, image_url):
+        print "Working", self.counter
+        image = self.urllib_wrapper.get_url (image_url)
+        if (image):
+            self.image_path = os.path.join (CACHE_LOCATION, "alternative-" + str(self.counter))
+            self.thumb_path = os.path.join (CACHE_LOCATION, "alternative-" + str(self.counter) + "thumb")
+            self.urllib_wrapper.save_content_into_file (image, self.image_path)
+            self.thumbnailer.create (self.image_path, self.thumb_path)
+        
+    def get_result (self):
+        return self.image_path, self.thumb_path
+
+
+
 class MussorgskyAlbumArt:
 
     def __init__ (self):
         bus = dbus.SessionBus ()
-        handle = time.time()
 
         if (not os.path.exists (CACHE_LOCATION)):
             os.makedirs (CACHE_LOCATION)
             
         self.thumbnailer = LocalThumbnailer ()
+        self.urllib_wrapper = UrllibWrapper ()
 
     def get_album_art (self, artist, album, force=False):
         """
@@ -65,10 +87,10 @@ class MussorgskyAlbumArt:
             results_page = self.__msn_images (artist, album)
             for online_resource in self.__get_url_from_msn_results_page (results_page):
                 print "Choosed:", online_resource
-                content = self.__get_url (online_resource)
+                content = self.urllib_wrapper.get_url (online_resource)
                 if (content):
                     print "Albumart: %s " % (filename)
-                    self.__save_content_into_file (content, filename)
+                    self.urllib_wrapper.save_content_into_file (content, filename)
                     album_art_available = True
                     break
 
@@ -92,6 +114,7 @@ class MussorgskyAlbumArt:
         """
         counter = 0
         results_page = self.__msn_images (artist, album)
+        threads = []
         for image_url in self.__get_url_from_msn_results_page (results_page):
             if (not image_url):
                 # Some searches doesn't return anything at all!
@@ -100,15 +123,18 @@ class MussorgskyAlbumArt:
             if (counter >= max_alternatives):
                 break
             
-            image = self.__get_url (image_url)
-            if (image):
-                image_path = os.path.join (CACHE_LOCATION, "alternative-" + str(counter))
-                thumb_path = os.path.join (CACHE_LOCATION, "alternative-" + str(counter) + "thumb")
-                self.__save_content_into_file (image, image_path)
-                self.thumbnailer.create (image_path, thumb_path)
-                counter += 1
-                yield (image_path, thumb_path)
+            t = AADownloadThread (image_url, counter)
+            t.start ()
+            threads.append (t)
+            counter += 1
 
+        for t in threads:
+            t.join (5)
+            if (t.isAlive ()):
+                yield (None, None)
+            else:
+                yield t.get_result ()
+            
 
     def save_alternative (self, artist, album, img_path, thumb_path):
         if not os.path.exists (img_path) or not os.path.exists (thumb_path):
@@ -123,30 +149,6 @@ class MussorgskyAlbumArt:
 
         return (filename, thumbnail)
 
-    def __last_fm (self, artist, album):
-
-        if (not libxml_available):
-            return None
-        
-        if (not album or len (album) < 1):
-            return None
-        
-        URL = BASE_LASTFM + "&api_key=" + LASTFM_APIKEY
-        if (artist and len(artist) > 1):
-            URL += "&artist=" + urllib.quote(artist)
-        if (album):
-            URL += "&album=" + urllib.quote(album)
-            
-        print "Retrieving: %s" % (URL)
-        result = self.__get_url (URL)
-        if (not result):
-            return None
-        doc = libxml2.parseDoc (result)
-        image_nodes = doc.xpathEval ("//image[@size='large']")
-        if len (image_nodes) < 1:
-            return None
-        else:
-            return image_nodes[0].content
 
     def __msn_images (self, artist, album):
 
@@ -156,7 +158,7 @@ class MussorgskyAlbumArt:
         if (good_album and good_artist):
             full_try = BASE_MSN + good_album + "+" + good_artist + MSN_MEDIUM + MSN_SQUARE
             print "Searching (album + artist): %s" % (full_try)
-            result = self.__get_url (full_try)
+            result = self.urllib_wrapper.get_url (full_try)
             if (result and result.find ("no_results") == -1):
                 return result
 
@@ -167,14 +169,14 @@ class MussorgskyAlbumArt:
             else:
                 album_try = BASE_MSN + good_album + MSN_MEDIUM + MSN_SQUARE
                 print "Searching (album): %s" % (album_try)
-                result = self.__get_url (album_try)
+                result = self.urllib_wrapper.get_url (album_try)
                 if (result and result.find ("no_results") == -1):
                     return result
             
         if (artist):
             artist_try = BASE_MSN + good_artist + "+CD+music"  + MSN_SMALL + MSN_SQUARE + MSN_PHOTO
             print "Searching (artist CD): %s" % (artist_try)
-            result = self.__get_url (artist_try)
+            result = self.urllib_wrapper.get_url (artist_try)
             if (result and result.find ("no_results") == -1):
                 return result
         
@@ -215,20 +217,6 @@ class MussorgskyAlbumArt:
         clean.replace ("/", "%2F")
         clean = clean.replace (" CD1", "").replace(" CD2", "")
         return urllib.quote(clean)
-
-    def __save_content_into_file (self, content, filename):
-        output = open (filename, 'w')
-        output.write (content)
-        output.close ()
-        
-    def __get_url (self, url):
-        request = urllib2.Request (url)
-        request.add_header ('User-Agent', 'Mussorgsky/0.1 Test')
-        opener = urllib2.build_opener ()
-        try:
-            return opener.open (request).read ()
-        except:
-            return None
 
     def __request_thumbnail (self, filename):
         thumbFile = get_thumb_filename_for_path (filename)
@@ -293,7 +281,10 @@ if __name__ == "__main__":
         maa.get_album_art (options.artist, options.album)
 
     if options.multiple:
+        start = time.time ()
         maa = MussorgskyAlbumArt ()
         for (img, thumb) in  maa.get_alternatives (options.artist, options.album, 5):
             print img
             print thumb
+        end = time.time ()
+        print end - start
