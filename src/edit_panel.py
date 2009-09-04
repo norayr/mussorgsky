@@ -28,11 +28,12 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         self.album_art_retriever = MussorgskyAlbumArt ()
         self.albums_list = [a [0] for a in albums_list]
         self.artists_list = [a [0] for a in artists_list]
-        self.add (self.__create_view ())
+        self.__create_view ()
         if (songs_list):
             self.set_songs_list (songs_list)
         self.update_title ()
         self.banner = None
+
 
     def update_title (self):
         self.set_title ("Edit (%d/%d)" % (self.song_counter+1, len (self.songs_list)))
@@ -208,8 +209,20 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         
         view_vbox.pack_start (button_box, expand=False, fill=True, padding=6)
         
-        return view_vbox
+        self.add (view_vbox)
 
+        #menu = hildon.AppMenu ()
+        #go_to = hildon.Button (hildon.BUTTON_STYLE_NORMAL,
+        #                       hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
+        #go_to.set_title ("Go to")
+        #go_to.connect ("clicked", self.go_to_cb)
+        #menu.append (go_to)
+        #menu.show_all ()
+        #self.set_app_menu (menu)
+        
+
+    def go_to_cb (self, widget):
+        pass
 
     def set_data_in_view (self, song):
         """
