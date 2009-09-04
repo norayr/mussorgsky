@@ -1,7 +1,7 @@
 import hildon
 import gtk
 import gobject
-from album_art import MussorgskyAlbumArt
+from album_art_thread import MussorgskyAlbumArt
 
 class AlbumArtSelectionDialog (gtk.Dialog):
 
@@ -56,12 +56,16 @@ class AlbumArtSelectionDialog (gtk.Dialog):
     def __get_alternatives_async (self):
         counter = 0
         for (path, thumb) in self.downloader.get_alternatives (self.album, self.artist, self.size):
+            print path, thumb
             if (self.cancel):
                 return False
             self.paths.insert (counter, (path, thumb))
-            print "Setting", thumb, "as image"
-            self.images[counter].set_from_file (thumb)
-            self.event_boxes [counter].set_sensitive (True)
+            if (thumb):
+                print "Setting", thumb, "as image"
+                self.images[counter].set_from_file (thumb)
+                self.event_boxes [counter].set_sensitive (True)
+            else:
+                continue
             counter += 1
             while (gtk.events_pending()):
                 gtk.main_iteration()
