@@ -1,3 +1,10 @@
+mussorgsky (0.2.2-1) unstable; urgency=low
+
+  * Release 0.2.2
+  * Removed references to a removed module.
+
+ -- Ivan Frade <ivan.frade@gmail.com>  Tue, 05 Sep 2009 11:04:59 +0300
+
 mussorgsky (0.2.1-1) unstable; urgency=low
 
   * Release 0.2.1
