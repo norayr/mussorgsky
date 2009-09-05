@@ -97,7 +97,7 @@ class MussorgskyAlbumArt:
         if (not album_art_available):
             return (None, None)
 
-        if (not os.path.exists (thumbnail) or force or album_art_availble):
+        if (not os.path.exists (thumbnail) or force or album_art_available):
             if (not self.__request_thumbnail (filename)):
                 print "Failed doing thumbnail. Probably album art is not an image!"
                 os.remove (filename)
