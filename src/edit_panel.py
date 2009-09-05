@@ -4,7 +4,6 @@ import gtk, gobject
 from mutagen_backend import MutagenBackend
 from player_backend import MediaPlayer
 import album_art_spec
-from album_art import MussorgskyAlbumArt
 import os
 
 # Fields in the tuple!
@@ -25,7 +24,6 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         self.artist_change_handler = -1
         self.writer = MutagenBackend ()
         self.player = MediaPlayer ()
-        self.album_art_retriever = MussorgskyAlbumArt ()
         self.albums_list = [a [0] for a in albums_list]
         self.artists_list = [a [0] for a in artists_list]
         self.__create_view ()

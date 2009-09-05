@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.5
 import gtk, gobject
-from album_art import MussorgskyAlbumArt
+from album_art_thread import MussorgskyAlbumArt
 from utils import escape_html
 
 class MussorgskyAlbumArtDownloadDialog (gtk.Dialog):
