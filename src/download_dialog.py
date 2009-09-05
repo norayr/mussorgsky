@@ -58,8 +58,12 @@ class MussorgskyAlbumArtDownloadDialog (gtk.Dialog):
 
             artist = artist_albums_model.get_value (it, 2)
             album = artist_albums_model.get_value (it, 3)
-            
-            self.current_label.set_markup ("<small>Trying: %s - %s</small>" % (escape_html(artist),
+
+            if (artist.find ('|') != -1):
+                real_artist = "Various artists"
+            else:
+                real_artist = artist
+            self.current_label.set_markup ("<small>Trying: %s - %s</small>" % (escape_html(real_artist),
                                                                                    escape_html(album)))
             
             try:
@@ -69,7 +73,7 @@ class MussorgskyAlbumArtDownloadDialog (gtk.Dialog):
                 if (self.cancel):
                     break
                 
-                (image, thumb) = self.downloader.get_album_art (artist, album)
+                (image, thumb) = self.downloader.get_album_art (real_artist, album)
                 if thumb:
                         pixbuf = gtk.gdk.pixbuf_new_from_file_at_size (thumb, 64, 64)
                         artist_albums_model.set_value (it, 1, pixbuf)
@@ -79,7 +83,7 @@ class MussorgskyAlbumArtDownloadDialog (gtk.Dialog):
                 thumb = None
             
             self.set_title ("Downloading album art (%d/%d)" % (current, TOTAL))
-            self.previous_label.set_markup ("<b>%s - %s</b>" % (escape_html(artist), escape_html(album)))
+            self.previous_label.set_markup ("<b>%s - %s</b>" % (escape_html(real_artist), escape_html(album)))
               
             if (thumb):
                 self.album_art.set_from_file (thumb)

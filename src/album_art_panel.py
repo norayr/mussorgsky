@@ -14,17 +14,18 @@ class MussorgskyAlbumArtPanel (hildon.StackableWindow):
         self.set_border_width (12)
         self.__create_view ()
         self.downloader = None
+        # Visible string, image, artist, album
         self.model = gtk.ListStore (str, gtk.gdk.Pixbuf, str, str)
 
         for p in album_artists:
-            if (not p[1]):
+            if (not p[0]):
                 continue
-            album_art_path = getCoverArtThumbFileName (p[1])
+            album_art_path = getCoverArtThumbFileName (p[0])
             try:
                 pixbuf = gtk.gdk.pixbuf_new_from_file_at_size (album_art_path, 64, 64)
             except gobject.GError:
                 pixbuf = None
-            t = ("<b>%s</b>\n<small>%s</small>" % (escape_html(p[1]), escape_html(p[0])), pixbuf, p[0], p[1])
+            t = ("<b>%s</b>\n<small>%s</small>" % (escape_html(p[0]), escape_html(p[1])), pixbuf, p[1], p[0])
             self.model.append (t)
             
         self.treeview.set_model (self.model)

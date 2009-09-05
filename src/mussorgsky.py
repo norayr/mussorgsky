@@ -50,8 +50,8 @@ class MussorgskyMainWindow (hildon.StackableWindow):
         self.show_edit_panel (list_songs, list_albums, list_artists)
 
     def album_art_clicked (self, widget):
-        artists_albums = self.tracker.get_all_pairs_artist_album ()
-        panel = MussorgskyAlbumArtPanel (artists_albums)
+        album_artists = self.tracker.get_all_pairs_album_artist ()
+        panel = MussorgskyAlbumArtPanel (album_artists)
         panel.show_all ()
 
     def create_main_view (self):

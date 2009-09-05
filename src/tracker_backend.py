@@ -70,7 +70,7 @@ class TrackerBackend:
                                             "Audio:Album",
                                             "File:Mime"],
                                            "", [], rdf_query, False,
-                                           ["Audio:DateAdded"], False, 0, 32000)
+                                           ["Audio:DateAdded"], True, 0, 32000)
         return results
 
     def get_all_broken_songs (self):
@@ -94,30 +94,43 @@ class TrackerBackend:
                                                     ["Audio:Artist"],
                                                     "", False, 0, 32000)
 
-    def get_all_pairs_artist_album (self):
-        return self.iface_metadata.GetUniqueValues ("Music",
-                                                    ["Audio:Artist", "Audio:Album"],
-                                                    "", False, 0, 32000)
+    def get_all_pairs_album_artist (self):
+        return self.iface_metadata.GetUniqueValuesWithAggregates ("Music",
+                                                                  ["Audio:Album"],
+                                                                  "",
+                                                                  ["CONCAT"],
+                                                                  ["Audio:Artist"],
+                                                                  False, 0, 32000)
 
 # Test
 if __name__ == "__main__":
 
+    import sys
+    from optparse import OptionParser
+
+    parser = OptionParser()
+    parser.add_option ("-n", "--numbers", dest="print_numbers",
+                       action="store_true", default=True,
+                       help="Print stats about broken files")
+    
+    parser.add_option ("-p", "--pairs", dest="pairs_artist_album",
+                       action="store_true", default=True,
+                       help="Print all pairs (album, artist)")
+
+    (options, args) = parser.parse_args ()
+
+    if (not options.print_numbers and not options.pairs_artist_album):
+        parser.print_help ()
+        sys.exit (-1)
+
     tracker = TrackerBackend ()
+    if (options.print_numbers):
+        print tracker.count_songs_wo_artist (), "Songs without artist"
+        print tracker.count_songs_wo_title (), "Songs without title"
+        print tracker.count_songs_wo_album (), "Songs without album"
 
-    print "Songs without artist: " + str(tracker.count_songs_wo_artist ())
-
-    results = tracker.get_songs_without_artist ()
-    for r in results:
-        print "'%s', '%s', '%s', '%s', '%s'" % (r[0], r[2], r[3], r[4], r[5])
+    if (options.pairs_artist_album):
+        for (album, artist) in tracker.get_all_pairs_artist_album ():
+            print album,"-",artist
 
     
-    print "Songs without album " + str(tracker.count_songs_wo_album ())
-    print "Songs without title " + str(tracker.count_songs_wo_title ())
-
-    albums = tracker.get_list_of_known_albums ()
-    print "%d different albums" % (len (albums))
-    for a in albums:
-        print a[0]
-    
-    print "\nAll songs:"
-    print tracker.get_all_songs ()
