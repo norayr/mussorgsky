@@ -31,3 +31,28 @@ class UrllibWrapper ():
             return opener.open (request).read ()
         except:
             return None
+
+
+
+class Set:
+
+    def __init__ (self):
+        self.d = {}
+        self.k = None
+        
+    def insert (self, element):
+        if (not self.d.has_key (element)):
+            print "insert", element
+            self.d[element] = 1
+            self.k = None
+
+    def as_list (self):
+        if (self.k):
+            return self.k
+        
+        self.k = self.d.keys ()
+        self.k.sort ()
+        return self.k
+        
+
+
