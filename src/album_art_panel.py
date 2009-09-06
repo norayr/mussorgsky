@@ -31,8 +31,6 @@ class MussorgskyAlbumArtPanel (hildon.StackableWindow):
         self.treeview.set_model (self.model)
 
     def __create_view (self):
-        vbox = gtk.VBox (spacing=12, homogeneous=False)
-
         self.treeview = gtk.TreeView ()
         self.treeview.connect ("row-activated", self.row_activated_cb)
 
@@ -42,8 +40,6 @@ class MussorgskyAlbumArtPanel (hildon.StackableWindow):
 
         album_art = gtk.TreeViewColumn ("Album art", gtk.CellRendererPixbuf (), pixbuf=1)
         self.treeview.append_column (album_art)
-
-        #vbox.add (self.treeview)
 
         pannable_area = hildon.PannableArea ()
         pannable_area.add (self.treeview)
