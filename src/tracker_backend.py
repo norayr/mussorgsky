@@ -81,6 +81,10 @@ class TrackerBackend:
         return self.__run_rdf_query (RDF_ANY_MISSING_METADATA)
     
     def get_all_songs (self):
+        """
+        Return tuples with the following fields:
+        (uri, "Music", artist, title, album, mimetype)
+        """
         return self.__run_rdf_query ("")
 
 
