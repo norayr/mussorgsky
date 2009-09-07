@@ -15,7 +15,7 @@ MIME_KEY = 5
 
 class MussorgskyEditPanel (hildon.StackableWindow):
 
-    def __init__ (self, songs_list=None, albums_list=None, artists_list=None):
+    def __init__ (self):
         hildon.StackableWindow.__init__ (self)
         self.set_border_width (12)
         self.song_counter = 0
@@ -24,18 +24,45 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         self.artist_change_handler = -1
         self.writer = MutagenBackend ()
         self.player = MediaPlayer ()
-        self.albums_list = [a [0] for a in albums_list]
-        self.artists_list = [a [0] for a in artists_list]
         self.__create_view ()
-        if (songs_list):
-            self.set_songs_list (songs_list)
-        self.update_title ()
         self.banner = None
+        self.data_loaded = False
+        self.connect ("destroy", self.clean_banner)
 
+    def clean_banner (self):
+        if (self.banner and self.banner.get_property ("visible")):
+            self.banner.destroy ()
 
     def update_title (self):
         self.set_title ("Edit (%d/%d)" % (self.song_counter+1, len (self.songs_list)))
 
+    def set_data (self, songs_list, albums_list=None, artists_list=None):
+        """
+        Assumes albums and artists lists already sorted
+        """
+        assert not self.data_loaded
+        self.albums_list = []
+        album_selector = hildon.TouchSelectorEntry (text=True)
+        if (albums_list):
+            for a in albums_list:
+                self.albums_list.insert (0, a [0])
+                album_selector.append_text (a[0])
+        self.albums_list.reverse ()
+        self.album_button.set_selector (album_selector)
+
+        # Prepare artists
+        self.artists_list = []
+        artist_selector = hildon.TouchSelectorEntry (text=True)
+        if (artists_list):
+            for a in artists_list:
+                self.artists_list.insert (0,a [0])
+                artist_selector.append_text (a[0])
+        self.artists_list.reverse ()
+        self.artist_button.set_selector (artist_selector)
+        
+        self.set_songs_list (songs_list)
+        self.update_title ()
+        self.data_loaded = True
         
     def set_songs_list (self, songs_list):
         if (songs_list and len (songs_list) > 0):
@@ -160,24 +187,18 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         table.attach (self.title_entry, 1, 2, 0, 1)
 
         # Artist row
-        artist_selector = hildon.TouchSelectorEntry (text=True)
-        for a in self.artists_list:
-            artist_selector.append_text (a)
         self.artist_button = hildon.PickerButton (hildon.BUTTON_STYLE_NORMAL,
                                                   hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
         self.artist_button.set_title ("Artist: ")
-        self.artist_button.set_selector (artist_selector)
+        # Set data will set the selector
         table.attach (self.artist_button, 0, 2, 1, 2)
 
 
         # Album row
-        album_selector = hildon.TouchSelectorEntry (text=True)
-        for a in self.albums_list:
-            album_selector.append_text (a)
         self.album_button = hildon.PickerButton (hildon.BUTTON_STYLE_NORMAL,
                                                  hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
         self.album_button.set_title ("Album: ")
-        self.album_button.set_selector (album_selector)
+        # set_data will set the selector
         table.attach (self.album_button, 0, 2, 2, 3) 
         
 

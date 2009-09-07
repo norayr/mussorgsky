@@ -2,8 +2,8 @@
 import hildon
 import gtk, gobject
 from tracker_backend import TrackerBackend
-from edit_panel import MussorgskyEditPanel
 from album_art_panel import MussorgskyAlbumArtPanel
+from browse_panel import MussorgskyBrowsePanel
 
 class MussorgskyMainWindow (hildon.StackableWindow):
 
@@ -18,8 +18,8 @@ class MussorgskyMainWindow (hildon.StackableWindow):
         self.update_values (None)
         self.show_all ()
         
-    def show_edit_panel (self, songs, albums, artists):
-        panel = MussorgskyEditPanel (songs, albums, artists)
+    def show_edit_panel (self, songs):
+        panel = MussorgskyBrowsePanel (songs)
         panel.connect ("destroy", self.back_to_main_view)
         panel.show_all ()
 
@@ -29,9 +29,7 @@ class MussorgskyMainWindow (hildon.StackableWindow):
 
     def broken_files_clicked (self, widget):
         list_songs = self.tracker.get_all_broken_songs ()
-        list_albums = self.tracker.get_list_of_known_albums ()
-        list_artists = self.tracker.get_list_of_known_artists ()
-        self.show_edit_panel (list_songs, list_albums, list_artists)
+        self.show_edit_panel (list_songs)
 
     def update_values (self, user_data):
         print "Updating labels"
@@ -45,9 +43,7 @@ class MussorgskyMainWindow (hildon.StackableWindow):
 
     def browse_clicked (self, widget):
         list_songs = self.tracker.get_all_songs ()
-        list_albums = self.tracker.get_list_of_known_albums ()
-        list_artists = self.tracker.get_list_of_known_artists ()
-        self.show_edit_panel (list_songs, list_albums, list_artists)
+        self.show_edit_panel (list_songs)
 
     def album_art_clicked (self, widget):
         album_artists = self.tracker.get_all_pairs_album_artist ()

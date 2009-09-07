@@ -25,7 +25,18 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         self.player = MediaPlayer ()
         self.__create_view ()
         self.data_loaded = False
+        self.artist_list = None
+        self.albums_list = None
+        self.connect ("delete-event", self.close_function)
 
+    def close_function (self, widget, event):
+        if (not self.data_loaded):
+            return
+        
+        if self.__is_view_dirty ():
+            self.save_metadata ()
+
+        
     def update_title (self):
         self.set_title ("Edit (%d/%d)" % (self.model.get_path (self.current)[0] + 1,
                                           len (self.model)))
@@ -36,14 +47,30 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         return self.model.get (self.current, 0, 1, 2, 3, 4, 5)
 
     def set_model (self, model, current=None):
+        try:
+            if self.artists_list or self.albums_list:
+                pass
+        except AttributeError, e:
+            print "**** Set album and artist alternatives before setting a model"
+            raise e
+        
         self.model = model
         if (current):
             self.current = current
         else:
             self.current = self.model.get_iter_first ()
-
+        self.data_loaded = True
         self.set_data_in_view (self.get_current_row ())
         self.update_title ()
+
+    def set_current (self, current):
+        """
+        Iterator to current element
+        """
+        self.current = current
+        self.set_data_in_view (self.get_current_row ())
+        self.update_title ()
+
 
     def set_artist_alternatives (self, alternatives):
         self.artists_list = alternatives
@@ -72,11 +99,14 @@ class MussorgskyEditPanel (hildon.StackableWindow):
             print "Modified data. Save!"
             self.save_metadata ()
             
-        self.current = self.model.iter_next (self.current)
-        if (not self.current):
+        path = self.model.get_path (self.current)
+        if (path[0] == 0):
             self.destroy ()
-            
-        self.set_data_in_view (self.get_current_row ())
+        else:
+            new_path = ( path[0] -1, )
+            self.current = self.model.get_iter (new_path)
+            self.set_data_in_view (self.get_current_row ())
+            self.update_title ()
 
     def press_next_cb (self, widget):
         if (self.player.is_playing ()):
@@ -97,6 +127,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         else:
             self.set_data_in_view (self.get_current_row ())
             self.update_title ()
+
             
     def save_metadata (self):
         # Save the data in the online model to show the appropiate data
@@ -106,10 +137,15 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         # 1 - "Music"  -> doesn't change
         # 5 - mimetype -> doesn't change
         if (type (self.model) == gtk.TreeModelFilter):
+            print "Ye un filtered"
             m = self.model.get_model ()
+            c = self.model.convert_iter_to_child_iter (self.current)
         else:
+            # Very unlikely
             m = self.model
-        m.set (self.current,
+            c = self.current
+
+        m.set (c,
                2, self.artist_button.get_value (),
                3, self.title_entry.get_text (),
                4, self.album_button.get_value ())
@@ -123,13 +159,13 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         except IOError, e:
             # This error in case of tracker returning unexistent files.
             # Uhm.... for instance after removing a memory card we are editing!
-            dialog = gtk.MessageDialog (self,
-                                        gtk.DIALOG_DESTROY_WITH_PARENT,
-                                        gtk.MESSAGE_ERROR,
-                                        gtk.BUTTONS_CLOSE,
-                                        "%s" % str(e));
-            dialog.run ()
-
+            pass
+            #dialog = gtk.MessageDialog (self,
+            #                            gtk.DIALOG_DESTROY_WITH_PARENT,
+            #                            gtk.MESSAGE_ERROR,
+            #                            gtk.BUTTONS_CLOSE,
+            #                            "%s" % str(e));
+            #dialog.run ()
         
 
     def __is_view_dirty (self):
@@ -148,16 +184,13 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         view_vbox = gtk.VBox (homogeneous=False, spacing = 12)
 
         filename_row = gtk.HBox ()
-        filename_label = gtk.Label ("Filename:")
+        filename_label = gtk.Label ()
+        filename_label.set_markup ("<small>Filename:</small>")
         filename_row.pack_start (filename_label, expand=False, padding=12);
         self.filename_data = gtk.Label ("")
         filename_row.pack_start (self.filename_data, expand=True)
 
-        play_button = hildon.Button (hildon.BUTTON_STYLE_NORMAL, hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
-        img = gtk.image_new_from_stock (gtk.STOCK_MEDIA_PLAY, gtk.ICON_SIZE_BUTTON)
-        play_button.set_image (img)
-        play_button.connect ("clicked", self.clicked_play)
-        filename_row.pack_start (play_button, expand=False, fill=False)
+        #filename_row.pack_start (play_button, expand=False, fill=False)
         view_vbox.pack_start (filename_row, expand=False);
 
         central_panel = gtk.HBox (spacing=12)
@@ -172,11 +205,11 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         # Title row
         label_title = gtk.Label ("Title:")
         table.attach (label_title, 0, 1, 0, 1, 0)
-        self.title_entry = gtk.Entry()
+        self.title_entry = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         table.attach (self.title_entry, 1, 2, 0, 1)
 
         # Artist row
-        self.artist_button = hildon.PickerButton (hildon.BUTTON_STYLE_NORMAL,
+        self.artist_button = hildon.PickerButton (gtk.HILDON_SIZE_FINGER_HEIGHT,
                                                   hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
         self.artist_button.set_title ("Artist: ")
         # Set data will set the selector
@@ -184,7 +217,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
 
 
         # Album row
-        self.album_button = hildon.PickerButton (hildon.BUTTON_STYLE_NORMAL,
+        self.album_button = hildon.PickerButton (gtk.HILDON_SIZE_FINGER_HEIGHT,
                                                  hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
         self.album_button.set_title ("Album: ")
         # set_data will set the selector
@@ -197,28 +230,31 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         central_panel.pack_start (self.album_art, expand=False, fill=False)
         
         # Buttons row
-        button_box = gtk.HButtonBox ()
-        button_box.set_layout (gtk.BUTTONBOX_END)
+        button_box = gtk.Toolbar ()
 
-        back_button = hildon.Button (hildon.BUTTON_STYLE_NORMAL, hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
-        img = gtk.image_new_from_stock (gtk.STOCK_GO_BACK, gtk.ICON_SIZE_BUTTON)
-        back_button.set_image (img)
+        play_button = gtk.ToolButton (gtk.image_new_from_stock (gtk.STOCK_MEDIA_PLAY, gtk.ICON_SIZE_BUTTON))
+        play_button.connect ("clicked", self.clicked_play)                   
+        play_button.set_expand (True)
+        button_box.insert (play_button, -1)
+        
+        separator = gtk.SeparatorToolItem ()
+        separator.set_expand (True)
+        button_box.insert  (separator, -1)
+
+        back_button = gtk.ToolButton (gtk.image_new_from_stock (gtk.STOCK_GO_BACK, gtk.ICON_SIZE_BUTTON))
         back_button.connect ("clicked", self.press_back_cb)
-        button_box.pack_start (back_button, expand=True, fill=True, padding=6)
-        
-        next_button = hildon.Button (hildon.BUTTON_STYLE_NORMAL, hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
-        img = gtk.image_new_from_stock (gtk.STOCK_GO_FORWARD, gtk.ICON_SIZE_BUTTON)
-        next_button.set_image (img)
+        back_button.set_expand (True)
+        button_box.insert (back_button, -1)
+
+        next_button = gtk.ToolButton (gtk.image_new_from_stock (gtk.STOCK_GO_FORWARD, gtk.ICON_SIZE_BUTTON))
         next_button.connect ("clicked", self.press_next_cb)
-        button_box.pack_start (next_button, expand=True, fill=True, padding=6)
-        
-        view_vbox.pack_start (button_box, expand=False, fill=True, padding=6)
+        next_button.set_expand (True)
+        button_box.insert (next_button, -1)
+
+        self.add_toolbar (button_box)
         
         self.add (view_vbox)
 
-
-    def go_to_cb (self, widget):
-        pass
 
     def set_data_in_view (self, song):
         """
@@ -227,7 +263,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         """
         assert len (song) == 6
         
-        self.filename_data.set_text (song[FILE_URI])
+        self.filename_data.set_markup ("<small>" + song[FILE_URI] + "</small>")
         self.title_entry.set_text (song[TITLE_KEY])
         
 
@@ -244,12 +280,16 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         except ValueError:
             print "'%s' not in artist list!?" % (song[ARTIST_KEY])
             self.artist_button.set_value ("")
+        except AttributeError:
+            print "WARNING: Use set_artist_alternatives method to set a list of artists"
             
         try:
             self.album_button.set_active (self.albums_list.index (song[ALBUM_KEY]))
         except ValueError:
             print "'%s' is not in the album list!?" % (song[ALBUM_KEY])
             self.album_button.set_value ("")
+        except AttributeError:
+            print "WARNING: Use set_album_alternatives method to set a list of artists"
 
         # Reconnect the signals!
         self.album_change_handler = self.album_button.connect ("value-changed",
@@ -290,9 +330,6 @@ class MussorgskyEditPanel (hildon.StackableWindow):
             song = self.songs_list [self.song_counter]
             self.player.play ("file://" + song[FILE_URI])
 
-    def clicked_album_art (self, widget):
-        print "implement me, please"
-
     def album_selection_cb (self, widget):
         """
         On album change, add the album the local list of albums and the selector
@@ -315,7 +352,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
             print "Inserting artist", widget.get_value ()
             widget.get_selector ().prepend_text (widget.get_value ())
             self.artists_list.insert (0, widget.get_value ())
-    
+
 # Testing porpuses
 if __name__ == "__main__":
 
@@ -329,6 +366,8 @@ if __name__ == "__main__":
         model.append (t)
 
     window = MussorgskyEditPanel ()
+    window.set_artist_alternatives (["", "Bob Dylan"])
+    window.set_album_alternatives (["", "Bring it all back home", "Album 2", "Album 9", "Album 3"])
     window.set_model (model)
     window.connect ("destroy", gtk.main_quit)
     window.show_all ()
