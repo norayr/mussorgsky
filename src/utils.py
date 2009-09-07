@@ -42,7 +42,6 @@ class Set:
         
     def insert (self, element):
         if (not self.d.has_key (element)):
-            print "insert", element
             self.d[element] = 1
             self.k = None
 
