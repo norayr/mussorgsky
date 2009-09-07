@@ -17,17 +17,17 @@ class MussorgskyMainWindow (hildon.StackableWindow):
         self.__create_view ()
         self.show_all ()
         
-    def show_edit_panel (self, songs):
+    def show_browse_panel (self, songs):
         panel = MussorgskyBrowsePanel (songs)
         panel.show_all ()
 
     def broken_files_clicked (self, widget):
         list_songs = self.tracker.get_all_broken_songs ()
-        self.show_edit_panel (list_songs)
+        self.show_browse_panel (list_songs)
 
     def browse_clicked (self, widget):
         list_songs = self.tracker.get_all_songs ()
-        self.show_edit_panel (list_songs)
+        self.show_browse_panel (list_songs)
 
     def album_art_clicked (self, widget):
         album_artists = self.tracker.get_all_pairs_album_artist ()
