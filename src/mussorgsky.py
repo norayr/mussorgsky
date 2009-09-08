@@ -48,13 +48,13 @@ class MussorgskyMainWindow (hildon.StackableWindow):
         hbox = gtk.HBox ()
 
         align1 = gtk.Alignment (xalign=0.5, yalign=0.5)
-        button1 = FancyButton (image2, "Browse metadata")
+        button1 = FancyButton (image1, "Browse metadata")
         button1.connect ("clicked", self.browse_clicked)
         align1.add (button1)
         hbox.pack_start (align1)
 
         align2 = gtk.Alignment (xalign=0.5, yalign=0.5)
-        button2 = FancyButton(image1, "Album art")
+        button2 = FancyButton(image2, "Album art")
         button2.connect ("clicked", self.album_art_clicked)
         align2.add (button2)
         hbox.pack_start (align2)
