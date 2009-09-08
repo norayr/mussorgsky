@@ -22,7 +22,6 @@ class MussorgskyEditPanel (hildon.StackableWindow):
     def __init__ (self):
         hildon.StackableWindow.__init__ (self)
         self.set_border_width (12)
-        self.album_callback_id = -1
         self.album_change_handler = -1
         self.artist_change_handler = -1
         self.writer = MutagenBackend ()
@@ -95,10 +94,6 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         if (self.player.is_playing ()):
             self.player.stop ()
 
-        if (self.album_callback_id != -1):
-            gobject.source_remove (self.album_callback_id)
-            self.album_callback_id = -1
-
         if self.__is_view_dirty ():
             print "Modified data. Save!"
             self.save_metadata ()
@@ -115,10 +110,6 @@ class MussorgskyEditPanel (hildon.StackableWindow):
     def press_next_cb (self, widget):
         if (self.player.is_playing ()):
             self.player.stop ()
-
-        if (self.album_callback_id != -1):
-            gobject.source_remove (self.album_callback_id)
-            self.album_callback_id = -1
 
         if self.__is_view_dirty ():
             print "Modified data. Save!"
@@ -220,7 +211,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         table.attach (self.title_entry, 1, 2, 0, 1)
 
         # Artist row
-        self.artist_button = hildon.PickerButton (gtk.HILDON_SIZE_FINGER_HEIGHT,
+        self.artist_button = hildon.PickerButton (gtk.HILDON_SIZE_THUMB_HEIGHT,
                                                   hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
         self.artist_button.set_title ("Artist: ")
         # Set data will set the selector
@@ -228,11 +219,11 @@ class MussorgskyEditPanel (hildon.StackableWindow):
 
 
         # Album row
-        self.album_button = hildon.PickerButton (gtk.HILDON_SIZE_FINGER_HEIGHT,
+        self.album_button = hildon.PickerButton (gtk.HILDON_SIZE_THUMB_HEIGHT,
                                                  hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
         self.album_button.set_title ("Album: ")
         # set_data will set the selector
-        table.attach (self.album_button, 0, 2, 2, 3) 
+        table.attach (self.album_button, 0, 2, 2, 3)
         
 
         # Album art space
