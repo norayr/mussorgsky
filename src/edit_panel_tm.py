@@ -3,22 +3,25 @@ import hildon
 import gtk, gobject
 from mutagen_backend import MutagenBackend
 from player_backend import MediaPlayer
+from utils import escape_html
 import album_art_spec
 import os
 
 # Fields in the tuple!
-FILE_URI = 0
-ARTIST_KEY = 2
-TITLE_KEY = 3
-ALBUM_KEY = 4
-MIME_KEY = 5
+# Shared with browse_panel
+URI_COLUMN = 0
+ARTIST_COLUMN = 2
+TITLE_COLUMN = 3
+ALBUM_COLUMN = 4
+MIME_COLUMN = 5
+UI_COLUMN = 6
+SEARCH_COLUMN = 7
 
 class MussorgskyEditPanel (hildon.StackableWindow):
 
     def __init__ (self):
         hildon.StackableWindow.__init__ (self)
         self.set_border_width (12)
-        self.album_callback_id = -1
         self.album_change_handler = -1
         self.artist_change_handler = -1
         self.writer = MutagenBackend ()
@@ -91,10 +94,6 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         if (self.player.is_playing ()):
             self.player.stop ()
 
-        if (self.album_callback_id != -1):
-            gobject.source_remove (self.album_callback_id)
-            self.album_callback_id = -1
-
         if self.__is_view_dirty ():
             print "Modified data. Save!"
             self.save_metadata ()
@@ -112,17 +111,12 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         if (self.player.is_playing ()):
             self.player.stop ()
 
-        if (self.album_callback_id != -1):
-            gobject.source_remove (self.album_callback_id)
-            self.album_callback_id = -1
-
         if self.__is_view_dirty ():
             print "Modified data. Save!"
             self.save_metadata ()
 
         self.current = self.model.iter_next (self.current)
         if (not self.current):
-            print "Destroy"
             self.destroy ()
         else:
             self.set_data_in_view (self.get_current_row ())
@@ -137,7 +131,6 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         # 1 - "Music"  -> doesn't change
         # 5 - mimetype -> doesn't change
         if (type (self.model) == gtk.TreeModelFilter):
-            print "Ye un filtered"
             m = self.model.get_model ()
             c = self.model.convert_iter_to_child_iter (self.current)
         else:
@@ -145,14 +138,23 @@ class MussorgskyEditPanel (hildon.StackableWindow):
             m = self.model
             c = self.current
 
+        artist = self.artist_button.get_value ()
+        title = self.title_entry.get_text ()
+        album = self.album_button.get_value ()
+        text = "<b>%s</b>\n<small>%s</small>" % (escape_html (title),
+                                                 escape_html (artist) + " / " + escape_html (album))
+        search_str = artist.lower () + " " + title.lower () + " " + album.lower ()
+
         m.set (c,
-               2, self.artist_button.get_value (),
-               3, self.title_entry.get_text (),
-               4, self.album_button.get_value ())
+               ARTIST_COLUMN, artist,
+               TITLE_COLUMN, title,
+               ALBUM_COLUMN, album,
+               UI_COLUMN, text,
+               SEARCH_COLUMN, search_str)
         new_song = self.get_current_row ()
         try:
-            self.writer.save_metadata_on_file (new_song[FILE_URI],
-                                               new_song[MIME_KEY],
+            self.writer.save_metadata_on_file (new_song[URI_COLUMN],
+                                               new_song[MIME_COLUMN],
                                                self.artist_button.get_value (),
                                                self.title_entry.get_text (),
                                                self.album_button.get_value ())
@@ -174,10 +176,10 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         """
         song = self.get_current_row ()
 
-        return not (self.filename_data.get_text() == song[FILE_URI] and
-                    self.artist_button.get_value () == song[ARTIST_KEY] and
-                    self.title_entry.get_text () == song[TITLE_KEY] and
-                    self.album_button.get_value () == song[ALBUM_KEY] )
+        return not (self.filename_data.get_text() == song[URI_COLUMN] and
+                    self.artist_button.get_value () == song[ARTIST_COLUMN] and
+                    self.title_entry.get_text () == song[TITLE_COLUMN] and
+                    self.album_button.get_value () == song[ALBUM_COLUMN] )
         
 
     def __create_view (self):
@@ -209,7 +211,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         table.attach (self.title_entry, 1, 2, 0, 1)
 
         # Artist row
-        self.artist_button = hildon.PickerButton (gtk.HILDON_SIZE_FINGER_HEIGHT,
+        self.artist_button = hildon.PickerButton (gtk.HILDON_SIZE_THUMB_HEIGHT,
                                                   hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
         self.artist_button.set_title ("Artist: ")
         # Set data will set the selector
@@ -217,11 +219,11 @@ class MussorgskyEditPanel (hildon.StackableWindow):
 
 
         # Album row
-        self.album_button = hildon.PickerButton (gtk.HILDON_SIZE_FINGER_HEIGHT,
+        self.album_button = hildon.PickerButton (gtk.HILDON_SIZE_THUMB_HEIGHT,
                                                  hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
         self.album_button.set_title ("Album: ")
         # set_data will set the selector
-        table.attach (self.album_button, 0, 2, 2, 3) 
+        table.attach (self.album_button, 0, 2, 2, 3)
         
 
         # Album art space
@@ -263,8 +265,8 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         """
         assert len (song) == 6
         
-        self.filename_data.set_markup ("<small>" + song[FILE_URI] + "</small>")
-        self.title_entry.set_text (song[TITLE_KEY])
+        self.filename_data.set_markup ("<small>" + song[URI_COLUMN] + "</small>")
+        self.title_entry.set_text (song[TITLE_COLUMN])
         
 
         # Disconnect the value-change signal to avoid extra album art retrievals
@@ -276,17 +278,17 @@ class MussorgskyEditPanel (hildon.StackableWindow):
 
         # Set values in the picker buttons
         try:
-            self.artist_button.set_active (self.artists_list.index(song[ARTIST_KEY]))
+            self.artist_button.set_active (self.artists_list.index(song[ARTIST_COLUMN]))
         except ValueError:
-            print "'%s' not in artist list!?" % (song[ARTIST_KEY])
+            print "'%s' not in artist list!?" % (song[ARTIST_COLUMN])
             self.artist_button.set_value ("")
         except AttributeError:
             print "WARNING: Use set_artist_alternatives method to set a list of artists"
             
         try:
-            self.album_button.set_active (self.albums_list.index (song[ALBUM_KEY]))
+            self.album_button.set_active (self.albums_list.index (song[ALBUM_COLUMN]))
         except ValueError:
-            print "'%s' is not in the album list!?" % (song[ALBUM_KEY])
+            print "'%s' is not in the album list!?" % (song[ALBUM_COLUMN])
             self.album_button.set_value ("")
         except AttributeError:
             print "WARNING: Use set_album_alternatives method to set a list of artists"
@@ -299,9 +301,9 @@ class MussorgskyEditPanel (hildon.StackableWindow):
                                                                  self.artist_selection_cb)
 
         # Set the album art given the current data
-        self.set_album_art (song[ALBUM_KEY])
+        self.set_album_art (song[ALBUM_COLUMN])
 
-        if (not song[MIME_KEY] in self.writer.get_supported_mimes ()):
+        if (not song[MIME_COLUMN] in self.writer.get_supported_mimes ()):
             self.artist_button.set_sensitive (False)
             self.album_button.set_sensitive (False)
             self.title_entry.set_sensitive (False)
@@ -328,7 +330,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
             self.player.stop ()
         else:
             song = self.songs_list [self.song_counter]
-            self.player.play ("file://" + song[FILE_URI])
+            self.player.play ("file://" + song[URI_COLUMN])
 
     def album_selection_cb (self, widget):
         """

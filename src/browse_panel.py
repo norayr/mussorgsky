@@ -4,6 +4,15 @@ import gtk, gobject
 from edit_panel_tm import MussorgskyEditPanel
 from utils import escape_html, Set
 
+# Shared with edit_panel_tm
+URI_COLUMN = 0
+ARTIST_COLUMN = 2
+TITLE_COLUMN = 3
+ALBUM_COLUMN = 4
+MIME_COLUMN = 5
+UI_COLUMN = 6
+SEARCH_COLUMN = 7
+
 class MussorgskyBrowsePanel (hildon.StackableWindow):
 
     def __init__ (self, songs_list):
@@ -28,6 +37,8 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
             
         self.filtered_model = self.full_model.filter_new ()
         self.treeview.set_model (self.filtered_model)
+        self.filtered_model.set_visible_func (self.entry_equals, self.search_entry)
+
         self.kpid = self.connect ("key-press-event", self.key_pressed_cb)
 
     def __create_view (self):
@@ -35,7 +46,6 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
         
         self.treeview = gtk.TreeView ()
         self.treeview.connect ("row-activated", self.row_activated_cb)
-
         desc_column = gtk.TreeViewColumn ("Song", gtk.CellRendererText (), markup=6)
         desc_column.set_expand (True)
         self.treeview.append_column (desc_column)
@@ -52,7 +62,7 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
         self.search_close = gtk.Button (stock=gtk.STOCK_CLOSE)
         self.search_hbox.pack_start (self.search_close, expand=False)
         self.search_close.connect ("clicked", self.close_search_cb)
-        
+
         # Hide it when the window is created
         self.search_box_visible = False
         self.search_hbox.set_no_show_all (True)
@@ -67,7 +77,6 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
             
         if (len (widget.get_text ()) < 3):
             return
-        self.filtered_model.set_visible_func (self.entry_equals, widget)
         self.filtered_model.refilter ()
         self.treeview.set_model (self.filtered_model)
 
@@ -93,7 +102,7 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
     
     def entry_equals (self, model, it, user_data):
         t = user_data.get_text ()
-        return t.lower () in model.get_value (it, 7)
+        return t.lower () in model.get_value (it, SEARCH_COLUMN)
 
     def row_activated_cb (self, treeview, path, view_colum):
         edit_view = MussorgskyEditPanel ()
