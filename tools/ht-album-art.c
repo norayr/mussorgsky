@@ -22,7 +22,7 @@ static GOptionEntry   entries[] = {
 gint 
 main (gint argc, gchar **argv)
 {
-        gchar          *album_art, *thumbnail;
+        gchar          *album_art, *thumbnail, *album_art_uri;
         GOptionContext *context;
 
         g_type_init ();
@@ -54,13 +54,15 @@ main (gint argc, gchar **argv)
         g_print ("album art: %s\n", album_art);
 
         /*
-         * USE PATH!!! (not uri)
+         * USE uri!!! (Not path)
          */
-        thumbnail = hildon_thumbnail_get_uri (album_art, 124, 124, FALSE);
-        g_print ("thumbnail (using image path): %s\n", thumbnail);
+        album_art_uri = g_filename_to_uri (album_art, NULL, NULL);
+        thumbnail = hildon_thumbnail_get_uri (album_art_uri, 124, 124, FALSE);
+        g_print ("thumbnail (using uri): %s\n", thumbnail);
 
         g_free (album_art);
         g_free (thumbnail);
+        g_free (album_art_uri);
 
         return 0;
 }
