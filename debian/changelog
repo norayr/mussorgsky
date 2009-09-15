@@ -1,3 +1,13 @@
+mussorgsky (0.3-1) unstable; urgency=low
+
+  * Release 0.3
+  * Treeview with interactive search for metadata edition
+  * Minor updates in the edit UI
+  * Fixed thumbnail path calculation to meet MAFW expectatives
+  * Brand new initial screen using fancy images (Gabriel Schulhof)
+
+ -- Ivan Frade <ivan.frade@gmail.com>  Tue, 15 Sep 2009 23:58:59 +0300
+
 mussorgsky (0.2.2-1) unstable; urgency=low
 
   * Release 0.2.2
