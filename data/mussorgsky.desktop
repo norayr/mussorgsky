@@ -2,7 +2,7 @@
 Encoding=UTF-8
 Version=1.0
 Type=Application
-Name=Mussorgsky
+Name=MussOrgsky
 Comment=Music organizer
 Exec=/usr/bin/mussorgsky
 Icon=mussorgsky-icon
@@ -13,4 +13,4 @@ X-Osso-Service=org.maemo.mussorgsky
 X-Osso-Type=application/x-executable
 X-Maemo-Category=Main
 X-Text-Domain=mussorgsky
-X-Maemo-Wm-Class=Musssorgsky
+X-Maemo-Wm-Class=MusssOrgsky
