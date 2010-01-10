@@ -4,7 +4,7 @@ import gtk, gobject
 from tracker_backend import TrackerBackend
 from album_art_panel import MussorgskyAlbumArtPanel
 from browse_panel import MussorgskyBrowsePanel
-from fancy_button import FancyButton
+from fancy_button import FancyButton, settings_changed
 
 class MussorgskyMainWindow (hildon.StackableWindow):
 
@@ -66,6 +66,11 @@ if __name__ == "__main__":
 
     try:
         window = MussorgskyMainWindow ()
+        
+        settings = gtk.settings_get_default ()
+        settings.connect ("notify", settings_changed)
+        settings_changed (None, None)
+
         gtk.main ()
     except Exception, e:
         dialog = gtk.MessageDialog (None,
