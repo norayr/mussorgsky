@@ -62,7 +62,6 @@ class FancyButton (gtk.EventBox):
         
         if (widget.state == gtk.STATE_ACTIVE):
             if (fancy_button_highlight_pb):
-                print "Painting highlight image"
                 widget.window.draw_pixbuf (None,
                                            fancy_button_highlight_pb,
                                            0, 0,
