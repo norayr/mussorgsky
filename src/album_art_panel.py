@@ -4,7 +4,7 @@ import gtk, gobject
 from album_art_spec import getCoverArtThumbFileName
 from download_dialog import MussorgskyAlbumArtDownloadDialog
 from utils import escape_html
-from aa_selection_dialog import AlbumArtSelectionDialog
+from aa_selection_dialog import AlbumArtSelectionDialog, RESPONSE_CLICK
 
 class MussorgskyAlbumArtPanel (hildon.StackableWindow):
 
@@ -69,7 +69,7 @@ class MussorgskyAlbumArtPanel (hildon.StackableWindow):
         dialog.show_all ()
         
         response = dialog.run ()
-        if (response > -1):
+        if (response == RESPONSE_CLICK):
             (img, thumb) = dialog.get_selection ()
             if img and thumb:
                 pixbuf = gtk.gdk.pixbuf_new_from_file_at_size (thumb, 64, 64)

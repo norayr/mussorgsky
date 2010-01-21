@@ -3,6 +3,46 @@ import gtk
 import gobject
 from album_art_thread import MussorgskyAlbumArt
 
+RESPONSE_CLICK = 1
+
+class ClickableImage (gtk.EventBox):
+
+    def __init__ (self, isRemoveOption=False):
+        gtk.EventBox.__init__ (self)
+
+        self.isRemoveOption = isRemoveOption
+
+        self.img = gtk.Image ()
+        self.img.set_size_request (124, 124)
+        self.add (self.img)
+        self.set_sensitive (False)
+
+        self.img_path = None
+        self.thumb_path = None
+
+        if (self.isRemoveOption):
+            self.img.set_from_icon_name ("mediaplayer_default_album",
+                                         gtk.ICON_SIZE_MENU)
+            self.img.set_pixel_size (124)
+            self.set_sensitive (True)
+            
+    def set_image (self, tmp_img, tmp_thumb):
+        assert not self.isRemoveOption
+        self.img_path = tmp_img
+        self.thumb_path = tmp_thumb
+        self.img.set_from_file (self.thumb_path)
+        self.set_sensitive (True)
+
+    def set_default_image (self):
+        self.img.set_from_stock (gtk.STOCK_CDROM, gtk.ICON_SIZE_DIALOG)
+
+    def get_paths (self):
+        return self.img_path, self.thumb_path
+
+    def is_remove_option (self):
+        return self.isRemoveOption
+        
+
 class AlbumArtSelectionDialog (gtk.Dialog):
 
     def __init__ (self, parent, artist, album, size, downloader=None):
@@ -18,7 +58,6 @@ class AlbumArtSelectionDialog (gtk.Dialog):
         self.artist = artist
         self.album = album
         self.size = size
-        self.paths = []
         self.__create_view (size)
         self.cancel = False
         self.connect ("response", self.handle_response)
@@ -38,49 +77,31 @@ class AlbumArtSelectionDialog (gtk.Dialog):
         hbox = gtk.HBox (homogeneous=True)
 
         self.images = []
-        self.event_boxes = []
         for i in range (0, size):
-            img = gtk.Image ()
-            img.set_size_request (124, 124)
-            self.images.append (img)
-
-            event_box = gtk.EventBox ()
-            event_box.add (img)
-            event_box.connect ("button-release-event", self.click_on_img, i)
-            event_box.set_sensitive (False)
-            self.event_boxes.append (event_box)
-            
-            hbox.pack_start (event_box, expand=False, fill=True)
+            image = ClickableImage ()
+            image.connect ("button-release-event", self.click_on_img)
+            self.images.append (image)
+            hbox.pack_start (image, expand=False, fill=True)
             
         # default empty option
-        img = gtk.Image ()
-        img.set_from_icon_name ("mediaplayer_default_album", gtk.ICON_SIZE_MENU)
-        img.set_pixel_size (124)
-        #img.set_size_request (124, 124)
-        self.images.append (img)
-
-        event_box = gtk.EventBox ()
-        event_box.add (img)
-        event_box.connect ("button-release-event", self.click_on_img, self.DEFAULT_ALBUM)
-        event_box.set_sensitive (True)
-        self.event_boxes.append (event_box)
-            
-        hbox.pack_start (event_box, expand=False, fill=True)
-        
+        image = ClickableImage (isRemoveOption=True)
+        image.connect ("button-release-event", self.click_on_img)
+        self.images.append (image)
+        hbox.pack_start (image, expand=False, fill=True)
 
         self.vbox.add (hbox)
 
     def __get_alternatives_async (self):
         counter = 0
-        for (path, thumb) in self.downloader.get_alternatives (self.album, self.artist, self.size):
+        for (path, thumb) in self.downloader.get_alternatives (self.album,
+                                                               self.artist,
+                                                               self.size):
             print path, thumb
             if (self.cancel):
                 return False
-            self.paths.insert (counter, (path, thumb))
             if (thumb):
                 print "Setting", thumb, "as image"
-                self.images[counter].set_from_file (thumb)
-                self.event_boxes [counter].set_sensitive (True)
+                self.images[counter].set_image (path, thumb)
             else:
                 continue
             counter += 1
@@ -88,27 +109,28 @@ class AlbumArtSelectionDialog (gtk.Dialog):
                 gtk.main_iteration()
 
         while (counter < self.size):
-                self.images[counter].set_from_stock (gtk.STOCK_CDROM, gtk.ICON_SIZE_DIALOG)
+                self.images[counter].set_default_image ()
                 counter += 1
                 
         hildon.hildon_gtk_window_set_progress_indicator (self, 0)
 
 
-    def click_on_img (self, widget, event, position):
-        if (position == self.DEFAULT_ALBUM):
+    def click_on_img (self, image, event):
+        if (image.is_remove_option ()):
             self.selection_img = None
             self.selection_thumb = None
             self.downloader.reset_alternative (self.artist, self.album)
         else:
-            img, thumb = self.paths[position]
-            self.selection_img, self.selection_thumb = self.downloader.save_alternative (self.artist,
-                                                                                         self.album,
-                                                                                         img, thumb)
-        self.response (position)
+            tmp_img, tmp_thumb = image.get_paths ()
+            img, thumb = self.downloader.save_alternative (self.artist,
+                                                           self.album,
+                                                           tmp_img,
+                                                           tmp_thumb)
+            self.selection_img, self.selection_thumb = img, thumb
+        self.response (RESPONSE_CLICK)
 
     def get_selection (self):
         return (self.selection_img, self.selection_thumb)
-
     
     def handle_response (self, widget, response_id):
         self.cancel = True
@@ -141,6 +163,7 @@ if __name__ == "__main__":
         if response == gtk.RESPONSE_CLOSE or response == gtk.RESPONSE_DELETE_EVENT or response == gtk.RESPONSE_REJECT:
             print "Noooo"
         else:
+            print "RESPONSE_CLICK", response == RESPONSE_CLICK
             print "Selected", aadd.get_selection ()
         aadd.hide ()
         
