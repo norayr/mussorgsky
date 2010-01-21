@@ -16,6 +16,7 @@ try:
     import PIL
     import Image
 except ImportError:
+    import sys
     print "Please install python-imaging package"
     sys.exit (-1)
 
@@ -149,6 +150,12 @@ class MussorgskyAlbumArt:
 
         return (filename, thumbnail)
 
+    def reset_alternative (self, artist, album):
+
+        for filepath in [getCoverArtFileName (album),
+                         getCoverArtThumbFileName (album)]:
+            if os.path.exists (filepath):
+                os.remove (filepath)
 
     def __msn_images (self, artist, album):
 

@@ -14,6 +14,7 @@ class AlbumArtSelectionDialog (gtk.Dialog):
                              "Select album art", parent,
                              gtk.DIALOG_DESTROY_WITH_PARENT,
                              (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT))
+        self.DEFAULT_ALBUM = size+1
         self.artist = artist
         self.album = album
         self.size = size
@@ -50,6 +51,22 @@ class AlbumArtSelectionDialog (gtk.Dialog):
             self.event_boxes.append (event_box)
             
             hbox.pack_start (event_box, expand=False, fill=True)
+            
+        # default empty option
+        img = gtk.Image ()
+        img.set_from_icon_name ("mediaplayer_default_album", gtk.ICON_SIZE_MENU)
+        img.set_pixel_size (124)
+        #img.set_size_request (124, 124)
+        self.images.append (img)
+
+        event_box = gtk.EventBox ()
+        event_box.add (img)
+        event_box.connect ("button-release-event", self.click_on_img, self.DEFAULT_ALBUM)
+        event_box.set_sensitive (True)
+        self.event_boxes.append (event_box)
+            
+        hbox.pack_start (event_box, expand=False, fill=True)
+        
 
         self.vbox.add (hbox)
 
@@ -78,10 +95,15 @@ class AlbumArtSelectionDialog (gtk.Dialog):
 
 
     def click_on_img (self, widget, event, position):
-        img, thumb = self.paths[position]
-        self.selection_img, self.selection_thumb = self.downloader.save_alternative (self.artist,
-                                                                                     self.album,
-                                                                                     img, thumb)
+        if (position == self.DEFAULT_ALBUM):
+            self.selection_img = None
+            self.selection_thumb = None
+            self.downloader.reset_alternative (self.artist, self.album)
+        else:
+            img, thumb = self.paths[position]
+            self.selection_img, self.selection_thumb = self.downloader.save_alternative (self.artist,
+                                                                                         self.album,
+                                                                                         img, thumb)
         self.response (position)
 
     def get_selection (self):
@@ -108,6 +130,8 @@ if __name__ == "__main__":
                 yield a
         def save_alternative (self, artist, album, img, thumb):
             return ("/home/user/.cache/media-art/" + img, "/home/user/.thumbnails/normal/" + thumb)
+        def reset_alternative (self, artist, album):
+            print "Removing the album-art and the thumbnail"
                               
 
     def clicked_button (self):
