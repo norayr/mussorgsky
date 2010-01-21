@@ -88,13 +88,32 @@ class AlbumArtSelectionDialog (gtk.Dialog):
         self.images.append (image)
         hbox.pack_start (image, expand=False, fill=True)
 
-        self.vbox.add (hbox)
+        self.vbox.pack_start (hbox)
+
+        label = gtk.Label ("Search:")
+        entry = hildon.Entry (gtk.HILDON_SIZE_FINGER_HEIGHT)
+        entry.set_text (self.artist + " " +  self.album)
+        entry.grab_focus ()
+        button = hildon.Button (gtk.HILDON_SIZE_FINGER_HEIGHT,
+                                hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
+        button.set_text ("Go", "")
+        button.connect ("clicked", self.user_text_search_cb, entry)
+        self.hbox_research = gtk.HBox (homogeneous=False)
+        self.hbox_research.pack_start (label, expand=False)
+        self.hbox_research.pack_start (entry)
+        self.hbox_research.pack_start (button, expand=False)
+        self.hbox_research.set_sensitive (False)
+        self.vbox.pack_start (self.hbox_research)
 
     def __get_alternatives_async (self):
+        results = self.downloader.get_alternatives (self.album,
+                                                    self.artist,
+                                                    self.size)
+        self.__show_results (results)
+        
+    def __show_results (self, generator):
         counter = 0
-        for (path, thumb) in self.downloader.get_alternatives (self.album,
-                                                               self.artist,
-                                                               self.size):
+        for (path, thumb) in generator:
             print path, thumb
             if (self.cancel):
                 return False
@@ -112,7 +131,22 @@ class AlbumArtSelectionDialog (gtk.Dialog):
                 counter += 1
                 
         hildon.hildon_gtk_window_set_progress_indicator (self, 0)
+        self.hbox_research.set_sensitive (True)
 
+    def user_text_search_cb (self, w, entry):
+        user_text = entry.get_text ()
+        if user_text and len (user_text) > 0:
+            for ev in self.images[:-1]:
+                ev.set_sensitive (False)
+                #ev.set_default_image ()
+            while (gtk.events_pending()):
+                gtk.main_iteration()
+
+            hildon.hildon_gtk_window_set_progress_indicator (self, 1)
+            results = self.downloader.get_alternatives_free_text (user_text,
+                                                                  self.size)
+            self.__show_results (results)
+            
 
     def click_on_img (self, image, event):
         if (image.is_remove_option ()):
@@ -147,6 +181,10 @@ if __name__ == "__main__":
                         ("../dylan.jpeg", "../dylan-thumb.jpeg")]
         def get_alternatives (self, album, artist, amount):
             for a in self.alt:
+                time.sleep (1)
+                yield a
+        def get_alternatives_free_text (self, user_text, amount=4):
+            for a in [("free%d" % i, "thumb%d" %i) for i in range (0, amount)]:
                 time.sleep (1)
                 yield a
         def save_alternative (self, artist, album, img, thumb):

@@ -113,8 +113,15 @@ class MussorgskyAlbumArt:
         """
         return a list of paths of possible album arts
         """
-        counter = 0
         results_page = self.__msn_images (artist, album)
+        return self.__process_results_page (results_page, max_alternatives)
+
+    def get_alternatives_free_text (self, search_text, max_alternatives=4):
+        results_page = self.__msn_images_free_text (search_text)
+        return self.__process_results_page (results_page, max_alternatives)
+
+    def __process_results_page (self, results_page, max_alternatives):
+        counter = 0
         threads = []
         for image_url in self.__get_url_from_msn_results_page (results_page):
             if (not image_url):
@@ -189,6 +196,11 @@ class MussorgskyAlbumArt:
         
         return None
 
+    def __msn_images_free_text (self, search_text):
+        full_try = BASE_MSN + self.__clean_string_for_search (search_text) + MSN_MEDIUM + MSN_SQUARE
+        result = self.urllib_wrapper.get_url (full_try)
+        return result
+    
 
     def __get_url_from_msn_results_page (self, page):
 
