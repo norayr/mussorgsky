@@ -243,12 +243,16 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         separator.set_expand (True)
         button_box.insert  (separator, -1)
 
-        back_button = gtk.ToolButton (gtk.image_new_from_stock (gtk.STOCK_GO_BACK, gtk.ICON_SIZE_BUTTON))
+        back_img = gtk.Image ()
+        back_img.set_from_icon_name ("general_back", gtk.ICON_SIZE_BUTTON)
+        back_button = gtk.ToolButton (back_img)
         back_button.connect ("clicked", self.press_back_cb)
         back_button.set_expand (True)
         button_box.insert (back_button, -1)
 
-        next_button = gtk.ToolButton (gtk.image_new_from_stock (gtk.STOCK_GO_FORWARD, gtk.ICON_SIZE_BUTTON))
+        next_img = gtk.Image ()
+        next_img.set_from_icon_name ("general_forward", gtk.ICON_SIZE_BUTTON)
+        next_button = gtk.ToolButton (next_img)
         next_button.connect ("clicked", self.press_next_cb)
         next_button.set_expand (True)
         button_box.insert (next_button, -1)
