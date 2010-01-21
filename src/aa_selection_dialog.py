@@ -54,7 +54,6 @@ class AlbumArtSelectionDialog (gtk.Dialog):
                              "Select album art", parent,
                              gtk.DIALOG_DESTROY_WITH_PARENT,
                              (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT))
-        self.DEFAULT_ALBUM = size+1
         self.artist = artist
         self.album = album
         self.size = size
