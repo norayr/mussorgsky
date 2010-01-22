@@ -87,23 +87,24 @@ class AlbumArtSelectionDialog (gtk.Dialog):
         image.connect ("button-release-event", self.click_on_img)
         self.images.append (image)
         hbox.pack_start (image, expand=False, fill=True)
+        self.vbox.pack_start (hbox, padding=6)
+        
+        label = gtk.Label ("New search:")
+        self.entry = hildon.Entry (gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.entry.set_text (self.artist + " " +  self.album)
 
-        self.vbox.pack_start (hbox)
-
-        label = gtk.Label ("Search:")
-        entry = hildon.Entry (gtk.HILDON_SIZE_FINGER_HEIGHT)
-        entry.set_text (self.artist + " " +  self.album)
-        entry.grab_focus ()
+        img = gtk.Image ()
+        img.set_from_icon_name ("general_search", gtk.ICON_SIZE_LARGE_TOOLBAR)
         button = hildon.Button (gtk.HILDON_SIZE_FINGER_HEIGHT,
                                 hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
-        button.set_text ("Go", "")
-        button.connect ("clicked", self.user_text_search_cb, entry)
-        self.hbox_research = gtk.HBox (homogeneous=False)
+        button.set_image (img)
+        button.connect ("clicked", self.user_text_search_cb, self.entry)
+        self.hbox_research = gtk.HBox (homogeneous=False, spacing=6)
         self.hbox_research.pack_start (label, expand=False)
-        self.hbox_research.pack_start (entry)
+        self.hbox_research.pack_start (self.entry)
         self.hbox_research.pack_start (button, expand=False)
         self.hbox_research.set_sensitive (False)
-        self.vbox.pack_start (self.hbox_research)
+        self.vbox.pack_start (self.hbox_research, padding=6)
 
     def __get_alternatives_async (self):
         results = self.downloader.get_alternatives (self.album,
@@ -132,17 +133,18 @@ class AlbumArtSelectionDialog (gtk.Dialog):
                 
         hildon.hildon_gtk_window_set_progress_indicator (self, 0)
         self.hbox_research.set_sensitive (True)
-
+        self.entry.grab_focus ()
+        
     def user_text_search_cb (self, w, entry):
         user_text = entry.get_text ()
         if user_text and len (user_text) > 0:
+            hildon.hildon_gtk_window_set_progress_indicator (self, 1)
             for ev in self.images[:-1]:
                 ev.set_sensitive (False)
-                #ev.set_default_image ()
+            self.hbox_research.set_sensitive (False)
             while (gtk.events_pending()):
                 gtk.main_iteration()
 
-            hildon.hildon_gtk_window_set_progress_indicator (self, 1)
             results = self.downloader.get_alternatives_free_text (user_text,
                                                                   self.size)
             self.__show_results (results)
