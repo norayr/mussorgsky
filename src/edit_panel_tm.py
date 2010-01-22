@@ -160,12 +160,6 @@ class MussorgskyEditPanel (hildon.StackableWindow):
             # This error in case of tracker returning unexistent files.
             # Uhm.... for instance after removing a memory card we are editing!
             pass
-            #dialog = gtk.MessageDialog (self,
-            #                            gtk.DIALOG_DESTROY_WITH_PARENT,
-            #                            gtk.MESSAGE_ERROR,
-            #                            gtk.BUTTONS_CLOSE,
-            #                            "%s" % str(e));
-            #dialog.run ()
         
 
     def __is_view_dirty (self):
