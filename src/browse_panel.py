@@ -43,6 +43,18 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
 
     def __create_view (self):
         vbox = gtk.VBox (homogeneous=False)
+
+        menu = hildon.AppMenu ()
+        all_items = gtk.RadioButton (None, "All")
+        all_items.set_mode (False)
+        all_items.connect ("clicked", self.__show_all_items)
+        menu.add_filter (all_items)
+        broken_items = gtk.RadioButton (all_items, "Uncomplete")
+        broken_items.set_mode (False)
+        broken_items.connect ("clicked", self.__show_uncomplete_items)
+        menu.add_filter (broken_items)
+        menu.show_all ()
+        self.set_app_menu (menu)
         
         self.treeview = gtk.TreeView ()
         self.treeview.connect ("row-activated", self.row_activated_cb)
@@ -111,6 +123,12 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
         edit_view.set_model (self.treeview.get_model (), self.treeview.get_model ().get_iter (path))
         edit_view.show_all ()
 
+
+    def __show_all_items (self, button):
+        pass
+
+    def __show_uncomplete_items (self, button):
+        pass
 
 if __name__ == "__main__":
 
