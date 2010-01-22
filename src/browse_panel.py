@@ -26,16 +26,16 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
         self.albums_set = Set ()
 
         # (uri, "Music", artist, title, album, mimetype) + "string" + search_string
-        self.full_model = gtk.ListStore (str, str, str, str, str, str, str, str)
+        full_model = gtk.ListStore (str, str, str, str, str, str, str, str)
         for (uri, category, artist, title, album, mime) in songs_list:
             text = "<b>%s</b>\n<small>%s</small>" % (escape_html (title),
                                                      escape_html (artist) + " / " + escape_html (album))
             search_str = artist.lower () + " " + title.lower () + " " + album.lower ()
-            self.full_model.append ((uri, category, artist, title, album, mime, text, search_str))
+            full_model.append ((uri, category, artist, title, album, mime, text, search_str))
             self.artist_set.insert (artist)
             self.albums_set.insert (album)
             
-        self.filtered_model = self.full_model.filter_new ()
+        self.filtered_model = full_model.filter_new ()
         self.treeview.set_model (self.filtered_model)
         self.filtered_model.set_visible_func (self.entry_equals, self.search_entry)
 
@@ -83,12 +83,6 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
         self.add (vbox)
 
     def search_type (self, widget):
-        if len (widget.get_text()) == 0:
-            self.treeview.set_model (self.full_model)
-            return
-            
-        if (len (widget.get_text ()) < 3):
-            return
         self.filtered_model.refilter ()
         self.treeview.set_model (self.filtered_model)
 
