@@ -186,9 +186,6 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         view_vbox = gtk.VBox (homogeneous=False, spacing = 12)
 
         filename_row = gtk.HBox ()
-        filename_label = gtk.Label ()
-        filename_label.set_markup ("<small>Filename:</small>")
-        filename_row.pack_start (filename_label, expand=False, padding=12);
         self.filename_data = gtk.Label ("")
         filename_row.pack_start (self.filename_data, expand=True)
 
