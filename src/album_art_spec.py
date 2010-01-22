@@ -16,15 +16,13 @@ def getCoverArtFileName (album):
     album = unicode (album)
     albumString=dropInsideContent(album,"[","]" )
     albumString=dropInsideContent(albumString,"{","}" )
-    albumString=dropInsideContent(albumString,"(",")" )    
-    albumString=albumString.strip('()_{}[]!@#$^&*+=|\\/"\'?<>~`')
-    albumString=albumString.lstrip(' ')
-    albumString=albumString.rstrip(' ')
+    albumString=dropInsideContent(albumString,"(",")" )
+    for special_char in '()_{}[]!@#$^&*+=|\\/"\'?<>~`':
+        albumString=albumString.replace(special_char, " ")
     albumString=dropInsideContent(albumString,"{","}" )
     albumString=albumString.lower()
     albumString=string.replace(albumString,"\t"," ")
-    albumString=string.replace(albumString,"  "," ")    
-    
+    albumString=" ".join (albumString.split ())
     try:
         albumString=unicodedata.normalize('NFKD',albumString).encode()
         albumString=albumString.encode()
