@@ -52,6 +52,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         return self.model.get (self.current, 0, 1, 2, 3, 4, 5)
 
     def set_model (self, model, current=None):
+        assert type(model) == gtk.TreeModelFilter
         try:
             if self.artists_list or self.albums_list:
                 pass
@@ -132,13 +133,8 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         # 0 - filename -> doesn't change
         # 1 - "Music"  -> doesn't change
         # 5 - mimetype -> doesn't change
-        if (type (self.model) == gtk.TreeModelFilter):
-            m = self.model.get_model ()
-            c = self.model.convert_iter_to_child_iter (self.current)
-        else:
-            # Very unlikely
-            m = self.model
-            c = self.current
+        m = self.model.get_model ()
+        c = self.model.convert_iter_to_child_iter (self.current)
 
         artist = self.artist_button.get_value ()
         title = self.title_entry.get_text ()
@@ -359,19 +355,21 @@ class MussorgskyEditPanel (hildon.StackableWindow):
 # Testing porpuses
 if __name__ == "__main__":
 
-    TEST_DATA = [("/home/user/Music/dylan.mp3", "Music", "Bob Dylan", "Subterranean homesick blues", "Bring it all back home", "audio/mpeg"),
-                 ("/home/user/mufix/a.mp3", "Music", "", "title", "Album 2", "a/b"),
-    		 ("/media/mmc1/Attachments/b.m4a", "Music", "", "b", "Album 9", "audio/mpeg"),
-                 ("/home/user/mufix/3.mp2", "Music", "", "titlex", "Album 3", "audio/mpeg")]
+    TEST_DATA = [("/a/b/c/%d.mp3" %i, "Music",
+                  "Artist %d" % i, "Title %d" % i, "Album %d" % (i*100),
+                  "audio/mpeg",
+                  "artist %d album %d" % (i, i*100),
+                  "text to be searched artist %d album %d" % (i, i*100)) for i in range (0, 4)]
 
-    model = gtk.ListStore (str, str, str, str, str, str)
+    model = gtk.ListStore (str, str, str, str, str, str, str, str)
     for t in TEST_DATA:
+        print t
         model.append (t)
 
     window = MussorgskyEditPanel ()
-    window.set_artist_alternatives (["", "Bob Dylan"])
-    window.set_album_alternatives (["", "Bring it all back home", "Album 2", "Album 9", "Album 3"])
-    window.set_model (model)
+    window.set_artist_alternatives (["Artist %d" % i for i in range (0, 4)])
+    window.set_album_alternatives (["Album %d" % (i*100) for i in range (0, 4)])
+    window.set_model (model.filter_new ())
     window.connect ("destroy", gtk.main_quit)
     window.show_all ()
     gtk.main ()
