@@ -17,6 +17,8 @@ MIME_COLUMN = 5
 UI_COLUMN = 6
 SEARCH_COLUMN = 7
 
+THEME_PATH = "/usr/share/themes/default"
+
 class MussorgskyEditPanel (hildon.StackableWindow):
 
     def __init__ (self):
@@ -230,8 +232,8 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         
         # Buttons row
         button_box = gtk.Toolbar ()
-
-        play_button = gtk.ToolButton (gtk.image_new_from_stock (gtk.STOCK_MEDIA_PLAY, gtk.ICON_SIZE_BUTTON))
+        play_image = os.path.join (THEME_PATH, "mediaplayer", "Play.png")
+        play_button = gtk.ToolButton (gtk.image_new_from_file (play_image))
         play_button.connect ("clicked", self.clicked_play)                   
         play_button.set_expand (True)
         button_box.insert (play_button, -1)
@@ -240,16 +242,14 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         separator.set_expand (True)
         button_box.insert  (separator, -1)
 
-        back_img = gtk.Image ()
-        back_img.set_from_icon_name ("general_back", gtk.ICON_SIZE_BUTTON)
-        back_button = gtk.ToolButton (back_img)
+        back_image = os.path.join (THEME_PATH, "mediaplayer", "Back.png")
+        back_button = gtk.ToolButton (gtk.image_new_from_file (back_image))
         back_button.connect ("clicked", self.press_back_cb)
         back_button.set_expand (True)
         button_box.insert (back_button, -1)
 
-        next_img = gtk.Image ()
-        next_img.set_from_icon_name ("general_forward", gtk.ICON_SIZE_BUTTON)
-        next_button = gtk.ToolButton (next_img)
+        next_image = os.path.join (THEME_PATH, "mediaplayer", "Forward.png")
+        next_button = gtk.ToolButton (gtk.image_new_from_file (next_image))
         next_button.connect ("clicked", self.press_next_cb)
         next_button.set_expand (True)
         button_box.insert (next_button, -1)
