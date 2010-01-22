@@ -333,7 +333,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         if (self.player.is_playing ()):
             self.player.stop ()
         else:
-            song = self.songs_list [self.song_counter]
+            song = self.get_current_row ()
             self.player.play ("file://" + song[URI_COLUMN])
 
     def album_selection_cb (self, widget):
