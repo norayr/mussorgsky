@@ -134,6 +134,7 @@ class AlbumArtSelectionDialog (gtk.Dialog):
         hildon.hildon_gtk_window_set_progress_indicator (self, 0)
         self.hbox_research.set_sensitive (True)
         self.entry.grab_focus ()
+        self.entry.select_region (0, -1)
         
     def user_text_search_cb (self, w, entry):
         user_text = entry.get_text ()
