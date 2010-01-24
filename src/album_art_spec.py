@@ -13,7 +13,7 @@ THUMBS_LOCATION = os.getenv ("HOME") + "/.thumbnails/cropped/"
 
 def getCoverArtFileName (album):
     """Returns the cover art's filename that is formed from the album name."""
-    album = unicode (album, "utf8")
+    album = unicode (album)
     albumString=dropInsideContent(album,"[","]" )
     albumString=dropInsideContent(albumString,"{","}" )
     albumString=dropInsideContent(albumString,"(",")" )
