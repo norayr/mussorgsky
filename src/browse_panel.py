@@ -2,7 +2,7 @@
 import hildon
 import gtk, gobject
 from edit_panel_tm import MussorgskyEditPanel
-from utils import escape_html, Set
+from utils import escape_html, Set, is_empty
 
 # Shared with edit_panel_tm
 URI_COLUMN = 0
@@ -13,6 +13,12 @@ MIME_COLUMN = 5
 UI_COLUMN = 6
 SEARCH_COLUMN = 7
 
+SHOW_ALL = 1
+SHOW_UNCOMPLETE = 2
+SHOW_MATCH = 3
+
+import time
+
 class MussorgskyBrowsePanel (hildon.StackableWindow):
 
     def __init__ (self, songs_list):
@@ -20,7 +26,7 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
         self.set_title ("Browse collection")
         self.set_border_width (12)
         self.__create_view ()
-
+        
         # Prepare cache of artists and albums
         self.artist_set = Set ()
         self.albums_set = Set ()
@@ -28,16 +34,23 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
         # (uri, "Music", artist, title, album, mimetype) + "string" + search_string
         full_model = gtk.ListStore (str, str, str, str, str, str, str, str)
         for (uri, category, artist, title, album, mime) in songs_list:
-            text = "<b>%s</b>\n<small>%s</small>" % (escape_html (title),
-                                                     escape_html (artist) + " / " + escape_html (album))
-            search_str = artist.lower () + " " + title.lower () + " " + album.lower ()
-            full_model.append ((uri, category, artist, title, album, mime, text, search_str))
+            if is_empty (artist) and is_empty (title) and is_empty (album):
+                text = "<small>%s</small>" % (escape_html (uri))
+            else:
+                text = "<b>%s</b>\n<small>%s</small>" % (escape_html (title),
+                                                         escape_html (artist) + " / " + escape_html (album))
+            search_str = " ".join ([artist.lower (),
+                                   title.lower (),
+                                   album.lower ()])
+            full_model.append ((uri, None, artist, title, album, mime, text, search_str))
             self.artist_set.insert (artist)
             self.albums_set.insert (album)
-            
+
         self.filtered_model = full_model.filter_new ()
         self.treeview.set_model (self.filtered_model)
-        self.filtered_model.set_visible_func (self.entry_equals, self.search_entry)
+        self.filter_mode = SHOW_ALL
+        self.filtered_model.set_visible_func (self.filter_entry)
+        self.__set_filter_mode (None, SHOW_ALL)
 
         self.kpid = self.connect ("key-press-event", self.key_pressed_cb)
 
@@ -45,14 +58,15 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
         vbox = gtk.VBox (homogeneous=False)
 
         menu = hildon.AppMenu ()
-        all_items = gtk.RadioButton (None, "All")
-        all_items.set_mode (False)
-        all_items.connect ("clicked", self.__show_all_items)
-        menu.add_filter (all_items)
-        broken_items = gtk.RadioButton (all_items, "Uncomplete")
-        broken_items.set_mode (False)
-        broken_items.connect ("clicked", self.__show_uncomplete_items)
-        menu.add_filter (broken_items)
+        self.all_items = gtk.RadioButton (None, "All")
+        self.all_items.set_mode (False)
+        self.all_items.connect_after ("toggled", self.__set_filter_mode, SHOW_ALL)
+        menu.add_filter (self.all_items)
+        self.broken_items = gtk.RadioButton (self.all_items, "Uncomplete")
+        self.broken_items.set_mode (False)
+        self.broken_items.connect_after ("toggled",
+                                         self.__set_filter_mode, SHOW_UNCOMPLETE)
+        menu.add_filter (self.broken_items)
         menu.show_all ()
         self.set_app_menu (menu)
         
@@ -84,13 +98,17 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
 
     def search_type (self, widget):
         self.filtered_model.refilter ()
-        self.treeview.set_model (self.filtered_model)
 
     def close_search_cb (self, widget):
         assert not self.search_box_visible
         self.search_hbox.hide_all ()
         self.search_entry.set_text ("")
         self.search_box_visible = False
+        if (self.all_items.get_active ()):
+            self.filter_mode = SHOW_ALL
+        else:
+            self.filter_mode = SHOW_UNCOMPLETE
+        self.filtered_model.refilter ()
         self.kpid = self.connect ("key-press-event", self.key_pressed_cb)
 
     def key_pressed_cb (self, widget, event):
@@ -99,6 +117,7 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
                 return
             
             if (not self.search_box_visible ):
+                self.filter_mode = SHOW_MATCH
                 self.search_hbox.set_no_show_all (False)
                 self.search_hbox.show_all ()
                 
@@ -106,9 +125,6 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
             self.search_entry.connect ("changed", self.search_type)
             self.disconnect (self.kpid)
     
-    def entry_equals (self, model, it, user_data):
-        t = user_data.get_text ()
-        return t.lower () in model.get_value (it, SEARCH_COLUMN)
 
     def row_activated_cb (self, treeview, path, view_colum):
         edit_view = MussorgskyEditPanel ()
@@ -117,13 +133,39 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
         edit_view.set_model (self.treeview.get_model (), self.treeview.get_model ().get_iter (path))
         edit_view.show_all ()
 
+    def __set_filter_mode (self, button, filter_mode):
+        """
+        Parameter to use it as callback as well as regular function
+        """
+        if (filter_mode == self.filter_mode):
+            # Don't refilter if there is no change!
+            return
+        self.filter_mode = filter_mode
 
-    def __show_all_items (self, button):
-        pass
+        start = time.time ()
+        self.treeview.set_model (None)
+        self.filtered_model.refilter ()
+        self.treeview.set_model (self.filtered_model)
+        end = time.time ()
+        print "Refiltering ", end - start
 
-    def __show_uncomplete_items (self, button):
-        pass
+    def filter_entry (self, model, it):
+        if self.filter_mode == SHOW_ALL:
+            return True
+        elif self.filter_mode == SHOW_UNCOMPLETE:
+            return self.entry_uncomplete (model, it)
+        elif self.filter_mode == SHOW_MATCH:
+            return self.entry_with_text (model, it)
 
+    def entry_with_text (self, model, it):
+        t = self.search_entry.get_text ()
+        return t.lower () in model.get_value (it, SEARCH_COLUMN)
+
+    def entry_uncomplete (self, model, it):
+        r = filter (lambda x: not x or len(x.strip()) == 0,
+                    model.get (it, ARTIST_COLUMN, TITLE_COLUMN, ALBUM_COLUMN))
+        return len (r) > 0
+        
 if __name__ == "__main__":
 
     import random
@@ -132,14 +174,27 @@ if __name__ == "__main__":
         for i in range (0, random.randint (1, 8)):
             path = path + "/" + ("x"* random.randint (4, 12))
         return path
-            
+
+    def get_some_empty_titles (i):
+        if random.randint (0, 5) <= 1:
+            return ""
+        else:
+            return "Title <%d>" % i
+        
 
     songs = [(get_random_path (),
               "Music",
               "Artist%d" % i,
-              "Title <%d>" % i,
+              get_some_empty_titles (i),
               "album <%d>" % i,
-              "audio/mpeg") for i in range (0, 100)]
+              "audio/mpeg") for i in range (0, 30000)]
+
+    songs.append (("file:///no/metadata/at/all",
+                   "music",
+                   "",
+                   "",
+                   "",
+                   "audio/mpeg"))
 
     window = MussorgskyBrowsePanel (songs)
     window.connect ("destroy", gtk.main_quit )
