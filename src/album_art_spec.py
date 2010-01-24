@@ -18,7 +18,7 @@ def getCoverArtFileName (album):
     albumString=dropInsideContent(albumString,"{","}" )
     albumString=dropInsideContent(albumString,"(",")" )
     for special_char in '()_{}[]!@#$^&*+=|\\/"\'?<>~`':
-        albumString=albumString.replace(special_char, " ")
+        albumString=albumString.replace(special_char, "")
     albumString=dropInsideContent(albumString,"{","}" )
     albumString=albumString.lower()
     albumString=string.replace(albumString,"\t"," ")
