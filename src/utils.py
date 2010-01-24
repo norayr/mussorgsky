@@ -8,6 +8,8 @@ def escape_html (text, max_length=40):
         text = text [0:cutpoint] + "..."
     return gobject.markup_escape_text (text)
 
+def is_empty (text):
+    return not text or len (text.strip ()) == 0
 
 # Set socket timeout
 import socket
