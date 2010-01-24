@@ -87,7 +87,7 @@ class AlbumArtSelectionDialog (gtk.Dialog):
         image.connect ("button-release-event", self.click_on_img)
         self.images.append (image)
         hbox.pack_start (image, expand=False, fill=True)
-        self.vbox.pack_start (hbox, padding=6)
+        self.vbox.pack_start (hbox, padding=24)
         
         label = gtk.Label ("New search:")
         self.entry = hildon.Entry (gtk.HILDON_SIZE_FINGER_HEIGHT)
@@ -178,10 +178,10 @@ if __name__ == "__main__":
     import time
     class MockDownloader:
         def __init__ (self):
-            self.alt = [("../hendrix.jpeg", "../hendrix-thumb.jpeg"),
-                        ("../hoover.jpeg", "../hoover-thumb.jpeg"),
-                        ("../backbeat.jpeg", "../backbeat-thumb.jpeg"),
-                        ("../dylan.jpeg", "../dylan-thumb.jpeg")]
+            self.alt = [("../hendrix.jpeg", "../thumb1.124.jpeg"),
+                        ("../hoover.jpeg", "../thumb2.124.jpeg"),
+                        ("../backbeat.jpeg", "../thumb3.124.jpeg"),
+                        ("../dylan.jpeg", "../thumb5.jpeg")]
         def get_alternatives (self, album, artist, amount):
             for a in self.alt:
                 time.sleep (1)
@@ -197,7 +197,7 @@ if __name__ == "__main__":
                               
 
     def clicked_button (self):
-        aadd = AlbumArtSelectionDialog (w, "rory gallagher", "irish tour", 4, MockDownloader ())
+        aadd = AlbumArtSelectionDialog (w, "joe henderson", "blue note", 4, MockDownloader ())
         aadd.show_all ()
         response = aadd.run ()
         if response == gtk.RESPONSE_CLOSE or response == gtk.RESPONSE_DELETE_EVENT or response == gtk.RESPONSE_REJECT:
