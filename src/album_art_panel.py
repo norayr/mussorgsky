@@ -27,8 +27,7 @@ class MussorgskyAlbumArtPanel (hildon.StackableWindow):
         for p in album_artists:
             if (not p[0]):
                 continue
-            t = ("".join (["<b>", escape_html (p[0]),"</b>\n<small>",
-                           escape_html(p[1]), "</small>"]), None, p[1], p[0], False)
+            t = (None, None, p[1], p[0], False)
             self.model.append (t)
         print "Populate model (DONE):", time.time ()
             
@@ -66,8 +65,14 @@ class MussorgskyAlbumArtPanel (hildon.StackableWindow):
         self.set_app_menu (menu)
 
     def album_art_cell_data_cb (self, column, cell, model, iter):
-        pixbuf, album, not_first_time = model.get (iter, 1, 3, 4)
+        text, pixbuf, artist, album, not_first_time = model.get (iter, 0, 1, 2, 3, 4)
         if (not_first_time):
+            if (text == None):
+                print "Setting text", album
+                text = "".join (["<b>", escape_html (album),"</b>\n<small>",
+                                 escape_html(artist), "</small>"])
+                model.set (iter, 0, text)
+            
             if (pixbuf == None):
                 #print "Calling album art cell data cb", model.get (iter, 3)
                 album_art_path = getCoverArtThumbFileName (album)
@@ -108,7 +113,7 @@ class MussorgskyAlbumArtPanel (hildon.StackableWindow):
 if __name__ == "__main__":
     import random
     
-    artists_albums = [("Artist %d the greatest bolero singer in the universe" % i, "Album <%d>" % i) for i in range (0, 10000)]
+    artists_albums = [("Artist %d the greatest bolero singer in the universe" % i, "Album <%d>" % i) for i in range (0, 100)]
 
     # Overwrite the get thumb path for testing
     def local_file (path):
