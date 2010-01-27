@@ -1,3 +1,12 @@
+mussorgsky (0.4-1) unstable; urgency=low
+
+  * Release 0.4
+  * Revamped download dialog
+  * Edit UI using themable icons (from media player)
+  * Enable theming in the main view buttons
+
+ -- Ivan Frade <ivan.frade@gmail.com>  Tue, 25 Jan 2009 01:56:59 +0300
+
 mussorgsky (0.3-1) unstable; urgency=low
 
   * Release 0.3
