@@ -11,43 +11,21 @@ THUMBS_LOCATION = os.getenv ("HOME") + "/.thumbnails/cropped/"
 #COVERS_LOCATION = "/home/user/.cache/media-art/"
 #THUMBS_LOCATION = "/home/user/.thumbnails/cropped/"
 
+# Do this only once...
+import ctypes
+clib = ctypes.CDLL ("libhildonthumbnail.so")
+
+album_art_func = clib.hildon_albumart_get_path
+album_art_func.restype = ctypes.c_char_p
+
 def getCoverArtFileName (album):
-    """Returns the cover art's filename that is formed from the album name."""
-    album = unicode (album)
-    albumString=dropInsideContent(album,"[","]" )
-    albumString=dropInsideContent(albumString,"{","}" )
-    albumString=dropInsideContent(albumString,"(",")" )
-    for special_char in '()_{}[]!@#$^&*+=|\\/"\'?<>~`':
-        albumString=albumString.replace(special_char, "")
-    albumString=dropInsideContent(albumString,"{","}" )
-    albumString=albumString.lower()
-    albumString=string.replace(albumString,"\t"," ")
-    albumString=" ".join (albumString.split ())
-    try:
-        albumString=unicodedata.normalize('NFKD',albumString).encode("utf8")
-        albumString=albumString.encode()
-    except:
-        try:
-            albumString=albumString.encode('latin-1', 'ignore')
-            albumString=unicodedata.normalize('NFKD',albumString).encode("ascii")
-            albumString=str(albumString)
-            print albumString
-        except Exception, e:
-            albumString=str(albumString)
-            print "DEBUG: Using plain string"
-    if len(albumString)==0: albumString=" "
-     
-    albumMD5=md5.new(albumString).hexdigest()    
-    emptyMD5=md5.new(" ").hexdigest()
-    albumArt=COVERS_LOCATION + "album-" + emptyMD5 + "-" + albumMD5 + ".jpeg"
-    return albumArt
-
-
+    return album_art_func (None, album, "album")
+    
 def getCoverArtThumbFileName (album):
-    artFile = getCoverArtFileName(album)
+    artFile = getCoverArtFileName (album)
     if not artFile.startswith ("file://"):
         artFile = "file://" + artFile
-    thumbFile = THUMBS_LOCATION + md5.new(artFile).hexdigest() + ".jpeg"
+    thumbFile = THUMBS_LOCATION + md5.new (artFile).hexdigest() + ".jpeg"
     return thumbFile
 
 def get_thumb_filename_for_path (path):
@@ -55,13 +33,6 @@ def get_thumb_filename_for_path (path):
         path = "file://" + path
     thumbnail = THUMBS_LOCATION + md5.new (path).hexdigest () + ".jpeg"
     return thumbnail
-
-def dropInsideContent(s, startMarker, endMarker):
-    startPos=s.find(startMarker)
-    endPos=s.find(endMarker)
-    if startPos>0 and endPos>0 and endPos>startPos:
-            return s[0:startPos]+s[endPos+1:len(s)]
-    return s
 
 if __name__ == "__main__":
     import sys
