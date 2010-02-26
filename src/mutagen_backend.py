@@ -5,7 +5,9 @@ class MutagenBackend ():
 
     def __init__ (self):
         self.formats = {"audio/mpeg": self.__id3_writer ,
-                        "audio/x-ms-wma" : self.__wma_writer }
+                        "audio/x-ms-wma" : self.__wma_writer ,
+                        "audio/x-flac" : self.__flac_writer }
+
     def get_supported_mimes (self):
         return self.formats.keys ()
 
@@ -47,10 +49,21 @@ class MutagenBackend ():
         except:
             return False
 
-
+    def __flac_writer (self, filename, artist, title, album):
+        from mutagen.flac import FLAC
+        audio = FLAC (filename)
+        audio["artist"] = artist
+        audio["title"] = title
+        audio["album"] = album
+        try:
+            audio.save()
+            return True
+        except:
+            return False
 
 
 if __name__ == "__main__":
+    import os
 
     def verify (filename, expected_artist, expected_title, expected_album):
         from mutagen.easyid3 import EasyID3
@@ -66,36 +79,61 @@ if __name__ == "__main__":
         assert str(audio["Title"][0]) == expected_title
         assert str(audio["WM/AlbumTitle"][0]) == expected_album
         
+    def verify_flac (filename, expected_artist, expected_title, expected_album):
+        from mutagen.flac import FLAC
+        audio = FLAC (filename)
+        assert audio["artist"][0] == expected_artist
+        assert audio["title"][0] == expected_title
+        assert audio["album"][0] == expected_album
 
     writer = MutagenBackend ()
 
-    TEST_FILE = "test-files/strange.mp3"
-    TEST_FILE_TO_BREAK = "test-files/strange-fixed.mp3"
+    TEST_FILE = "test-files/empty.flac"
+    TEST_FILE_TO_BREAK = "test-files/test-result.flac"
 
     out = open (TEST_FILE_TO_BREAK, 'w')
     out.write (open (TEST_FILE,'r').read ())
     out.close ()
     
-    writer.save_metadata_on_file (TEST_FILE_TO_BREAK, "audio/mpeg",
+    writer.save_metadata_on_file (TEST_FILE_TO_BREAK, "audio/x-flac",
                                   "artist_test", "title_test", "album_test")
-    verify (TEST_FILE_TO_BREAK, "artist_test", "title_test", "album_test")
+    verify_flac (TEST_FILE_TO_BREAK, "artist_test", "title_test", "album_test")
     
-    writer.save_metadata_on_file (TEST_FILE_TO_BREAK, "audio/mpeg",
+    writer.save_metadata_on_file (TEST_FILE_TO_BREAK, "audio/x-flac",
                                   "artist_test_2", "title_test_2", "album_2")
-    verify (TEST_FILE_TO_BREAK, "artist_test_2", "title_test_2", "album_2")
+    verify_flac (TEST_FILE_TO_BREAK, "artist_test_2", "title_test_2", "album_2")
+
+    #os.unlink (TEST_FILE_TO_BREAK)
+
+    print "Pass: FLAC"
+    
+    ## TEST_FILE = "test-files/strange.mp3"
+    ## TEST_FILE_TO_BREAK = "test-files/strange-fixed.mp3"
+
+    ## out = open (TEST_FILE_TO_BREAK, 'w')
+    ## out.write (open (TEST_FILE,'r').read ())
+    ## out.close ()
+    
+    ## writer.save_metadata_on_file (TEST_FILE_TO_BREAK, "audio/mpeg",
+    ##                               "artist_test", "title_test", "album_test")
+    ## verify (TEST_FILE_TO_BREAK, "artist_test", "title_test", "album_test")
+    
+    ## writer.save_metadata_on_file (TEST_FILE_TO_BREAK, "audio/mpeg",
+    ##                               "artist_test_2", "title_test_2", "album_2")
+    ## verify (TEST_FILE_TO_BREAK, "artist_test_2", "title_test_2", "album_2")
 
 
 
-    READONLY_FILE = "test-files/no-write.mp3"
-    assert not writer.save_metadata_on_file (READONLY_FILE, "audio/mpeg",
-                                             "artist_test", "title_test", "album_test")
+    ## READONLY_FILE = "test-files/no-write.mp3"
+    ## assert not writer.save_metadata_on_file (READONLY_FILE, "audio/mpeg",
+    ##                                          "artist_test", "title_test", "album_test")
 
 
-    WMA_FILE = "test-files/hooverphonic.wma"
-    assert writer.save_metadata_on_file (WMA_FILE, "audio/x-ms-wma",
-                                  "artist_wma", "title_wma", "album_wma")
-    verify_wma (WMA_FILE, "artist_wma", "title_wma", "album_wma")
+    ## WMA_FILE = "test-files/hooverphonic.wma"
+    ## assert writer.save_metadata_on_file (WMA_FILE, "audio/x-ms-wma",
+    ##                               "artist_wma", "title_wma", "album_wma")
+    ## verify_wma (WMA_FILE, "artist_wma", "title_wma", "album_wma")
 
-    assert writer.save_metadata_on_file (WMA_FILE, "audio/x-ms-wma",
-                                  "artist_wma_2", "title_wma_2", "album_wma_2")
-    verify_wma (WMA_FILE, "artist_wma_2", "title_wma_2", "album_wma_2")
+    ## assert writer.save_metadata_on_file (WMA_FILE, "audio/x-ms-wma",
+    ##                               "artist_wma_2", "title_wma_2", "album_wma_2")
+    ## verify_wma (WMA_FILE, "artist_wma_2", "title_wma_2", "album_wma_2")
