@@ -3,10 +3,15 @@ import mutagen
 
 class MutagenBackend ():
 
+    #
+    # Maybe all this can be simplified using mutagen.File
+    #
     def __init__ (self):
         self.formats = {"audio/mpeg": self.__id3_writer ,
                         "audio/x-ms-wma" : self.__wma_writer ,
-                        "audio/x-flac" : self.__flac_writer }
+                        "audio/x-flac" : self.__autoguess_writer ,
+                        "audio/ogg" : self.__autoguess_writer ,
+                        "audio/ogg+vorbis" : self.__autoguess_writer }
 
     def get_supported_mimes (self):
         return self.formats.keys ()
@@ -49,9 +54,8 @@ class MutagenBackend ():
         except:
             return False
 
-    def __flac_writer (self, filename, artist, title, album):
-        from mutagen.flac import FLAC
-        audio = FLAC (filename)
+    def __autoguess_writer (self, filename, artist, title, album):
+        audio = mutagen.File (filename)
         audio["artist"] = artist
         audio["title"] = title
         audio["album"] = album
@@ -60,53 +64,10 @@ class MutagenBackend ():
             return True
         except:
             return False
-
-
+    
 if __name__ == "__main__":
-    import os
 
-    def verify (filename, expected_artist, expected_title, expected_album):
-        from mutagen.easyid3 import EasyID3
-        audio = EasyID3 (filename)
-        assert audio["artist"][0] == expected_artist
-        assert audio["title"][0] == expected_title
-        assert audio["album"][0] == expected_album
-
-    def verify_wma (filename, expected_artist, expected_title, expected_album):
-        from mutagen.asf import ASF
-        audio = ASF (filename)
-        assert str(audio["Author"][0]) == expected_artist
-        assert str(audio["Title"][0]) == expected_title
-        assert str(audio["WM/AlbumTitle"][0]) == expected_album
-        
-    def verify_flac (filename, expected_artist, expected_title, expected_album):
-        from mutagen.flac import FLAC
-        audio = FLAC (filename)
-        assert audio["artist"][0] == expected_artist
-        assert audio["title"][0] == expected_title
-        assert audio["album"][0] == expected_album
-
-    writer = MutagenBackend ()
-
-    TEST_FILE = "test-files/empty.flac"
-    TEST_FILE_TO_BREAK = "test-files/test-result.flac"
-
-    out = open (TEST_FILE_TO_BREAK, 'w')
-    out.write (open (TEST_FILE,'r').read ())
-    out.close ()
-    
-    writer.save_metadata_on_file (TEST_FILE_TO_BREAK, "audio/x-flac",
-                                  "artist_test", "title_test", "album_test")
-    verify_flac (TEST_FILE_TO_BREAK, "artist_test", "title_test", "album_test")
-    
-    writer.save_metadata_on_file (TEST_FILE_TO_BREAK, "audio/x-flac",
-                                  "artist_test_2", "title_test_2", "album_2")
-    verify_flac (TEST_FILE_TO_BREAK, "artist_test_2", "title_test_2", "album_2")
-
-    #os.unlink (TEST_FILE_TO_BREAK)
-
-    print "Pass: FLAC"
-    
+    pass
     ## TEST_FILE = "test-files/strange.mp3"
     ## TEST_FILE_TO_BREAK = "test-files/strange-fixed.mp3"
 
