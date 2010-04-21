@@ -32,6 +32,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         self.data_loaded = False
         self.artist_list = None
         self.albums_list = None
+        self.current = None
         self.connect ("delete-event", self.close_function)
 
     def close_function (self, widget, event):
@@ -143,16 +144,16 @@ class MussorgskyEditPanel (hildon.StackableWindow):
                                                  escape_html (artist) + " / " + escape_html (album))
         search_str = artist.lower () + " " + title.lower () + " " + album.lower ()
 
+        uri, mime = m.get (c, URI_COLUMN, MIME_COLUMN)
         m.set (c,
                ARTIST_COLUMN, artist,
                TITLE_COLUMN, title,
                ALBUM_COLUMN, album,
                UI_COLUMN, text,
                SEARCH_COLUMN, search_str)
-        new_song = self.get_current_row ()
         try:
-            self.writer.save_metadata_on_file (new_song[URI_COLUMN],
-                                               new_song[MIME_COLUMN],
+            self.writer.save_metadata_on_file (uri,#new_song[URI_COLUMN],
+                                               mime, #new_song[MIME_COLUMN],
                                                self.artist_button.get_value (),
                                                self.title_entry.get_text (),
                                                self.album_button.get_value ())
