@@ -20,7 +20,7 @@ def verify_MP3 (filename, expected_artist, expected_title, expected_album):
     assert audio["title"][0] == expected_title
     assert audio["album"][0] == expected_album
 
-def verify_wma (filename, expected_artist, expected_title, expected_album):
+def verify_WMA (filename, expected_artist, expected_title, expected_album):
     from mutagen.asf import ASF
     audio = ASF (filename)
     assert str(audio["Author"][0]) == expected_artist
@@ -57,7 +57,7 @@ class MutagenWritingTest (unittest.TestCase):
                                            "artist_test_2", "title_test_2", "album_2")
         verify_func (result, "artist_test_2", "title_test_2", "album_2")
 
-        os.unlink (result)
+        #os.unlink (result)
         
 
     def test_FLAC (self):
@@ -83,6 +83,14 @@ class MutagenWritingTest (unittest.TestCase):
         TEST_FILE_TO_BREAK = "../test-files/test-result.mp3"
         MIME = "audio/mpeg"
         self.general_test (TEST_FILE, TEST_FILE_TO_BREAK, MIME, verify_MP3)
+
+    def test_WMA (self):
+        TEST_FILE = "../test-files/empty.wma"
+        TEST_FILE_TO_BREAK = "../test-files/test-result.wma"
+        MIME = "audio/x-ms-wma"
+        print "Disabled WMA test (dunno how to cut the WMA file!)"
+        #self.general_test (TEST_FILE, TEST_FILE_TO_BREAK, MIME, verify_WMA)
+
         
 
 if __name__ == "__main__":
