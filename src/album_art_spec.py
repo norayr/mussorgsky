@@ -13,7 +13,7 @@ THUMBS_LOCATION = os.getenv ("HOME") + "/.thumbnails/cropped/"
 
 # Do this only once...
 import ctypes
-clib = ctypes.CDLL ("libhildonthumbnail.so")
+clib = ctypes.CDLL ("libhildonthumbnail.so.0")
 
 album_art_func = clib.hildon_albumart_get_path
 album_art_func.restype = ctypes.c_char_p
