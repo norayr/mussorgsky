@@ -5,6 +5,9 @@ from album_art_thread import MussorgskyAlbumArt
 
 RESPONSE_CLICK = 1
 
+import i18n
+_ = i18n.language.gettext
+
 class ClickableImage (gtk.EventBox):
 
     def __init__ (self, isRemoveOption=False):
@@ -51,7 +54,7 @@ class AlbumArtSelectionDialog (gtk.Dialog):
         Optionally downloader (for testing porpouses)
         """
         gtk.Dialog.__init__ (self,
-                             "Select album art", parent,
+                             _("Select album art"), parent,
                              gtk.DIALOG_DESTROY_WITH_PARENT,
                              (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT))
         self.artist = artist
@@ -89,7 +92,7 @@ class AlbumArtSelectionDialog (gtk.Dialog):
         hbox.pack_start (image, expand=False, fill=True)
         self.vbox.pack_start (hbox, padding=24)
         
-        label = gtk.Label ("New search:")
+        label = gtk.Label (_("New search:"))
         self.entry = hildon.Entry (gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.entry.set_text (self.artist + " " +  self.album)
 

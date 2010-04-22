@@ -18,12 +18,14 @@ SHOW_UNCOMPLETE = 2
 SHOW_MATCH = 3
 
 import time
+import i18n
+_ = i18n.language.gettext
 
 class MussorgskyBrowsePanel (hildon.StackableWindow):
 
     def __init__ (self, songs_list):
         hildon.StackableWindow.__init__ (self)
-        self.set_title ("Browse collection")
+        self.set_title (_("All music"))
         self.set_border_width (12)
         self.__create_view ()
         
@@ -58,11 +60,11 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
         vbox = gtk.VBox (homogeneous=False)
 
         menu = hildon.AppMenu ()
-        self.all_items = gtk.RadioButton (None, "All")
+        self.all_items = gtk.RadioButton (None, _("All"))
         self.all_items.set_mode (False)
         self.all_items.connect_after ("toggled", self.__set_filter_mode, SHOW_ALL)
         menu.add_filter (self.all_items)
-        self.broken_items = gtk.RadioButton (self.all_items, "Uncomplete")
+        self.broken_items = gtk.RadioButton (self.all_items, _("Incomplete"))
         self.broken_items.set_mode (False)
         self.broken_items.connect_after ("toggled",
                                          self.__set_filter_mode, SHOW_UNCOMPLETE)
@@ -133,6 +135,15 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
         edit_view.set_model (self.treeview.get_model (), self.treeview.get_model ().get_iter (path))
         edit_view.show_all ()
 
+    def __update_title_with_filter (self, filter_mode):
+        if self.filter_mode == SHOW_ALL:
+            self.set_title (_("All music"))
+        elif self.filter_mode == SHOW_UNCOMPLETE:
+            self.set_title (_("Music with uncomplete metadata"))
+        elif self.filter_mode == SHOW_MATCH:
+            self.set_title (_("Search results"))
+        
+
     def __set_filter_mode (self, button, filter_mode):
         """
         Parameter to use it as callback as well as regular function
@@ -141,13 +152,10 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
             # Don't refilter if there is no change!
             return
         self.filter_mode = filter_mode
-
-        start = time.time ()
+        self.__update_title_with_filter (self.filter_mode)
         self.treeview.set_model (None)
         self.filtered_model.refilter ()
         self.treeview.set_model (self.filtered_model)
-        end = time.time ()
-        print "Refiltering ", end - start
 
     def filter_entry (self, model, it):
         if self.filter_mode == SHOW_ALL:
@@ -187,7 +195,7 @@ if __name__ == "__main__":
               "Artist%d" % i,
               get_some_empty_titles (i),
               "album <%d>" % i,
-              "audio/mpeg") for i in range (0, 30000)]
+              "audio/non-supported") for i in range (0, 100)]
 
     songs.append (("file:///no/metadata/at/all",
                    "music",

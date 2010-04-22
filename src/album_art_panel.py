@@ -11,25 +11,24 @@ import time
 
 EMPTY_PIXBUF = gtk.gdk.Pixbuf (gtk.gdk.COLORSPACE_RGB, False, 8, 64, 64)
 
+import i18n
+_ = i18n.language.gettext
+
 class MussorgskyAlbumArtPanel (hildon.StackableWindow):
 
     def __init__ (self, album_artists):
         hildon.StackableWindow.__init__ (self)
-        self.set_title ("Album art handling")
+        self.set_title (_("Album art selection"))
         self.set_border_width (12)
-        print "Create view       :",time.time ()
         self.__create_view ()
-        print "Create view (DONE):", time.time ()
         self.downloader = None
         # Visible string, image, artist, album, painted!
         self.model = gtk.ListStore (str, gtk.gdk.Pixbuf, str, str, bool)
-        print "Populate model      :", time.time ()
         for p in album_artists:
             if (not p[0]):
                 continue
             t = (None, None, p[1], p[0], False)
             self.model.append (t)
-        print "Populate model (DONE):", time.time ()
             
         self.treeview.set_model (self.model)
 
@@ -58,7 +57,7 @@ class MussorgskyAlbumArtPanel (hildon.StackableWindow):
         menu = hildon.AppMenu ()
         automatic_retrieval = hildon.Button (hildon.BUTTON_STYLE_NORMAL,
                                              hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
-        automatic_retrieval.set_title ("Automatic retrieval")
+        automatic_retrieval.set_title (_("Automatic download"))
         automatic_retrieval.connect ("clicked", self.get_all_album_art)
         menu.append (automatic_retrieval)
         menu.show_all ()
@@ -68,7 +67,6 @@ class MussorgskyAlbumArtPanel (hildon.StackableWindow):
         text, pixbuf, artist, album, not_first_time = model.get (iter, 0, 1, 2, 3, 4)
         if (not_first_time):
             if (text == None):
-                print "Setting text", album
                 text = "".join (["<b>", escape_html (album),"</b>\n<small>",
                                  escape_html(artist), "</small>"])
                 model.set (iter, 0, text)

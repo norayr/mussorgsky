@@ -19,6 +19,9 @@ SEARCH_COLUMN = 7
 
 THEME_PATH = "/usr/share/themes/default"
 
+import i18n
+_ = i18n.language.gettext
+
 class MussorgskyEditPanel (hildon.StackableWindow):
 
     def __init__ (self):
@@ -44,8 +47,8 @@ class MussorgskyEditPanel (hildon.StackableWindow):
 
         
     def update_title (self):
-        self.set_title ("Edit (%d/%d)" % (self.model.get_path (self.current)[0] + 1,
-                                          len (self.model)))
+        self.set_title (_("Edit song") + " (%d/%d)" % (self.model.get_path (self.current)[0] + 1,
+                                                       len (self.model)))
 
     def get_current_row (self):
         if (not self.current):
@@ -152,8 +155,8 @@ class MussorgskyEditPanel (hildon.StackableWindow):
                UI_COLUMN, text,
                SEARCH_COLUMN, search_str)
         try:
-            self.writer.save_metadata_on_file (uri,#new_song[URI_COLUMN],
-                                               mime, #new_song[MIME_COLUMN],
+            self.writer.save_metadata_on_file (uri,
+                                               mime, 
                                                self.artist_button.get_value (),
                                                self.title_entry.get_text (),
                                                self.album_button.get_value ())
@@ -195,7 +198,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         view_vbox.pack_start (central_panel, expand=True, fill=True)
 
         # Title row
-        label_title = gtk.Label ("Title:")
+        label_title = gtk.Label (_("Title:"))
         table.attach (label_title, 0, 1, 0, 1, 0)
         self.title_entry = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         table.attach (self.title_entry, 1, 2, 0, 1)
@@ -203,7 +206,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         # Artist row
         self.artist_button = hildon.PickerButton (gtk.HILDON_SIZE_THUMB_HEIGHT,
                                                   hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
-        self.artist_button.set_title ("Artist: ")
+        self.artist_button.set_title (_("Artist:"))
         # Set data will set the selector
         table.attach (self.artist_button, 0, 2, 1, 2)
 
@@ -211,7 +214,7 @@ class MussorgskyEditPanel (hildon.StackableWindow):
         # Album row
         self.album_button = hildon.PickerButton (gtk.HILDON_SIZE_THUMB_HEIGHT,
                                                  hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
-        self.album_button.set_title ("Album: ")
+        self.album_button.set_title (_("Album:"))
         # set_data will set the selector
         table.attach (self.album_button, 0, 2, 2, 3)
         
