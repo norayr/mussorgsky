@@ -12,19 +12,19 @@ msgstr ""
 "Last-Translator: ivan frade <ivan.frade@gmail.com>\n"
 "Language-Team: Spanish\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=utf8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: debian/mussorgsky/usr/lib/mussorgsky/edit_panel_tm.py:50
 #: src/edit_panel_tm.py:50
 msgid "Edit song"
-msgstr "Editar cancion"
+msgstr "Editar canción"
 
 #: debian/mussorgsky/usr/lib/mussorgsky/edit_panel_tm.py:201
 #: src/edit_panel_tm.py:201
 msgid "Title:"
-msgstr "Titulo:"
+msgstr "Título:"
 
 #: debian/mussorgsky/usr/lib/mussorgsky/edit_panel_tm.py:209
 #: src/edit_panel_tm.py:209
@@ -39,12 +39,12 @@ msgstr "Disco:"
 #: debian/mussorgsky/usr/lib/mussorgsky/album_art_panel.py:21
 #: src/album_art_panel.py:21
 msgid "Album art selection"
-msgstr "Seleccion de portada"
+msgstr "Selección de portada"
 
 #: debian/mussorgsky/usr/lib/mussorgsky/album_art_panel.py:60
 #: src/album_art_panel.py:60
 msgid "Automatic download"
-msgstr "Descarga automatica"
+msgstr "Descarga automática"
 
 #: debian/mussorgsky/usr/lib/mussorgsky/mussorgsky.py:57 src/mussorgsky.py:57
 msgid "Metadata"
@@ -73,7 +73,7 @@ msgstr "Incompletas"
 #: debian/mussorgsky/usr/lib/mussorgsky/browse_panel.py:142
 #: src/browse_panel.py:142
 msgid "Music with uncomplete metadata"
-msgstr "Music con datos incompletos"
+msgstr "Música con datos incompletos"
 
 #: debian/mussorgsky/usr/lib/mussorgsky/browse_panel.py:144
 #: src/browse_panel.py:144
@@ -88,4 +88,4 @@ msgstr "Seleccione portada"
 #: debian/mussorgsky/usr/lib/mussorgsky/aa_selection_dialog.py:95
 #: src/aa_selection_dialog.py:95
 msgid "New search:"
-msgstr "Nueva busqueda:"
+msgstr "Nueva búsqueda:"
