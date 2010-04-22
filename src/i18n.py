@@ -5,12 +5,11 @@ import gettext
 APP_NAME = "mussorgsky"
 
 APP_DIR = os.path.join (sys.prefix,
-                        'share',
-                        APP_NAME)
+                        'share')
 
 LOCALE_DIR = os.path.join(APP_DIR, 'locale')
 
-DEFAULT_LANGUAGES = os.environ.get('LANGUAGE', '').split(':')
+DEFAULT_LANGUAGES = os.environ.get('LANG', '').split(':')
 DEFAULT_LANGUAGES += ['en_US']
 
 # Init i18n stuff
