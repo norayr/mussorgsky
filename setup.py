@@ -3,7 +3,6 @@
 from distutils.core import setup
 from distutils.core import setup
 from distutils import cmd
-#from distutils.command.install import install as _install
 from distutils.command.install_data import install_data as _install_data
 from distutils.command.build import build as _build
 
@@ -80,7 +79,7 @@ DATA = [('share/applications/hildon', ['data/mussorgsky.desktop']),
                             'src/i18n.py'])]
  
 setup(name         = 'mussorgsky',
-      version      = '0.4',
+      version      = '0.5',
       description  = 'Music Organizer: metadata editor, album art downloader',
       author       = 'Ivan Frade',
       author_email = '<ivan.frade@gmail.com>',
