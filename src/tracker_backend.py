@@ -70,7 +70,7 @@ class TrackerBackend:
                                             "Audio:Album",
                                             "File:Mime"],
                                            "", [], rdf_query, False,
-                                           ["Audio:DateAdded"], True, 0, 32000)
+                                           ["Audio:DateAdded"], False, 0, 32000)
         return results
 
     def get_all_broken_songs (self):
