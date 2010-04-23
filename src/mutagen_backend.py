@@ -11,6 +11,7 @@ class MutagenBackend ():
                         "audio/x-ms-wma" : self.__wma_writer ,
                         "audio/x-flac" : self.__autoguess_writer ,
                         "audio/ogg" : self.__autoguess_writer ,
+                        "audio/x-vorbis+ogg" : self.__autoguess_writer, 
                         "audio/ogg+vorbis" : self.__autoguess_writer }
 
     def get_supported_mimes (self):
