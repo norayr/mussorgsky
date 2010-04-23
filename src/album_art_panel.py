@@ -91,8 +91,11 @@ class MussorgskyAlbumArtPanel (hildon.StackableWindow):
 
     def row_activated_cb (self, treeview, path, view_colum):
         it = treeview.get_model ().get_iter (path)
-        album = treeview.get_model ().get_value (it, 3)
-        artist = treeview.get_model ().get_value (it, 2)
+        artist = treeview.get_model ().get_value (it, 3)
+        album = treeview.get_model ().get_value (it, 2)
+        print artist
+        if (artist.find ('|') != -1):
+            artist = "Various artists"
 
         dialog = AlbumArtSelectionDialog (self, artist, album, 5)
         dialog.show_all ()
@@ -111,7 +114,7 @@ class MussorgskyAlbumArtPanel (hildon.StackableWindow):
 if __name__ == "__main__":
     import random
     
-    artists_albums = [("Artist %d the greatest bolero singer in the universe" % i, "Album <%d>" % i) for i in range (0, 100)]
+    artists_albums = [("Artist %d|artist Y" % i, "Album <%d>" % i) for i in range (0, 10)]
 
     # Overwrite the get thumb path for testing
     def local_file (path):
