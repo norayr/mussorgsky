@@ -1,0 +1,91 @@
+# Finnish translations for PACKAGE package.
+# Copyright (C) 2010 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# ivan <ivan.frade@nokia.com>, 2010.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-04-22 16:50+0300\n"
+"PO-Revision-Date: 2010-04-22 22:04+0300\n"
+"Last-Translator: Kimmo Hämäläinen <kuzak76@gmail.com>\n"
+"Language-Team: Finnish\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: debian/mussorgsky/usr/lib/mussorgsky/edit_panel_tm.py:50
+#: src/edit_panel_tm.py:50
+msgid "Edit song"
+msgstr "Muokkaa tietoja"
+
+#: debian/mussorgsky/usr/lib/mussorgsky/edit_panel_tm.py:201
+#: src/edit_panel_tm.py:201
+msgid "Title:"
+msgstr "Nimi:"
+
+#: debian/mussorgsky/usr/lib/mussorgsky/edit_panel_tm.py:209
+#: src/edit_panel_tm.py:209
+msgid "Artist:"
+msgstr "Esittäjä:"
+
+#: debian/mussorgsky/usr/lib/mussorgsky/edit_panel_tm.py:217
+#: src/edit_panel_tm.py:217
+msgid "Album:"
+msgstr "Levy:"
+
+#: debian/mussorgsky/usr/lib/mussorgsky/album_art_panel.py:21
+#: src/album_art_panel.py:21
+msgid "Album art selection"
+msgstr "Levynkansien valinta"
+
+#: debian/mussorgsky/usr/lib/mussorgsky/album_art_panel.py:60
+#: src/album_art_panel.py:60
+msgid "Automatic download"
+msgstr "Automaattinen haku"
+
+#: debian/mussorgsky/usr/lib/mussorgsky/mussorgsky.py:57 src/mussorgsky.py:57
+msgid "Metadata"
+msgstr "Metadata"
+
+#: debian/mussorgsky/usr/lib/mussorgsky/mussorgsky.py:63 src/mussorgsky.py:63
+msgid "Album art"
+msgstr "Levynkannet"
+
+#: debian/mussorgsky/usr/lib/mussorgsky/browse_panel.py:28
+#: debian/mussorgsky/usr/lib/mussorgsky/browse_panel.py:140
+#: src/browse_panel.py:28 src/browse_panel.py:140
+msgid "All music"
+msgstr "Kaikki musiikki"
+
+#: debian/mussorgsky/usr/lib/mussorgsky/browse_panel.py:63
+#: src/browse_panel.py:63
+msgid "All"
+msgstr "Kaikki"
+
+#: debian/mussorgsky/usr/lib/mussorgsky/browse_panel.py:67
+#: src/browse_panel.py:67
+msgid "Incomplete"
+msgstr "Puutteellinen"
+
+#: debian/mussorgsky/usr/lib/mussorgsky/browse_panel.py:142
+#: src/browse_panel.py:142
+msgid "Music with uncomplete metadata"
+msgstr "Musiikki jolta puuttuu metadataa"
+
+#: debian/mussorgsky/usr/lib/mussorgsky/browse_panel.py:144
+#: src/browse_panel.py:144
+msgid "Search results"
+msgstr "Hakutulokset"
+
+#: debian/mussorgsky/usr/lib/mussorgsky/aa_selection_dialog.py:57
+#: src/aa_selection_dialog.py:57
+msgid "Select album art"
+msgstr "Valitse levynkansi"
+
+#: debian/mussorgsky/usr/lib/mussorgsky/aa_selection_dialog.py:95
+#: src/aa_selection_dialog.py:95
+msgid "New search:"
+msgstr "Uusi haku:"
