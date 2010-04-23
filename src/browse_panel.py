@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.5
 import hildon
-import gtk, gobject
+import gtk, gobject, glib
 from edit_panel_tm import MussorgskyEditPanel
 from utils import escape_html, Set, is_empty
 
@@ -55,6 +55,7 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
         self.__set_filter_mode (None, SHOW_ALL)
 
         self.kpid = self.connect ("key-press-event", self.key_pressed_cb)
+        self.fpid = None
 
     def __create_view (self):
         vbox = gtk.VBox (homogeneous=False)
@@ -98,8 +99,17 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
         vbox.pack_start (self.search_hbox, expand=False)
         self.add (vbox)
 
-    def search_type (self, widget):
+    def search_refilter_cb (self):
+        self.treeview.set_model (None)
         self.filtered_model.refilter ()
+        self.treeview.set_model (self.filtered_model)
+        self.fpid = None
+        return False
+
+    def search_type (self, widget):
+        if (self.fpid):
+            glib.source_remove (self.fpid)
+        self.fpid = glib.timeout_add (300, self.search_refilter_cb)
 
     def close_search_cb (self, widget):
         assert not self.search_box_visible
@@ -167,7 +177,8 @@ class MussorgskyBrowsePanel (hildon.StackableWindow):
 
     def entry_with_text (self, model, it):
         t = self.search_entry.get_text ()
-        return t.lower () in model.get_value (it, SEARCH_COLUMN)
+        #return t.lower () in model.get_value (it, SEARCH_COLUMN)
+        return model.get_value (it, SEARCH_COLUMN).find (t.lower ()) != -1
 
     def entry_uncomplete (self, model, it):
         r = filter (lambda x: not x or len(x.strip()) == 0,
@@ -195,7 +206,7 @@ if __name__ == "__main__":
               "Artist%d" % i,
               get_some_empty_titles (i),
               "album <%d>" % i,
-              "audio/non-supported") for i in range (0, 100)]
+              "audio/mpeg") for i in range (0, 10000)]
 
     songs.append (("file:///no/metadata/at/all",
                    "music",
