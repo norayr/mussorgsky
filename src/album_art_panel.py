@@ -91,9 +91,8 @@ class MussorgskyAlbumArtPanel (hildon.StackableWindow):
 
     def row_activated_cb (self, treeview, path, view_colum):
         it = treeview.get_model ().get_iter (path)
-        artist = treeview.get_model ().get_value (it, 3)
-        album = treeview.get_model ().get_value (it, 2)
-        print artist
+        artist = treeview.get_model ().get_value (it, 2)
+        album = treeview.get_model ().get_value (it, 3)
         if (artist.find ('|') != -1):
             artist = "Various artists"
 
