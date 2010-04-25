@@ -1,3 +1,11 @@
+mussorgsky (0.5.1-1) unstable; urgency=low
+
+  * Release 0.5.1
+  * Added dependency on python-gobject (due glib module)
+  * Fixed problem saving the album art
+
+ -- Ivan Frade <ivan.frade@gmail.com>  Tue, 25 Apr 2010 18:35:59 +0300
+
 mussorgsky (0.5-1) unstable; urgency=low
 
   * Release 0.5
