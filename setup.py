@@ -79,7 +79,7 @@ DATA = [('share/applications/hildon', ['data/mussorgsky.desktop']),
                             'src/i18n.py'])]
  
 setup(name         = 'mussorgsky',
-      version      = '0.5.1',
+      version      = '0.5.2',
       description  = 'Music Organizer: metadata editor, album art downloader',
       author       = 'Ivan Frade',
       author_email = '<ivan.frade@gmail.com>',
