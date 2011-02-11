@@ -168,7 +168,7 @@ class MussorgskyAlbumArt:
 
         good_artist = self.__clean_string_for_search (artist)
         good_album = self.__clean_string_for_search (album)
-
+        
         if (good_album and good_artist):
             full_try = BASE_MSN + good_album + "+" + good_artist + MSN_MEDIUM + MSN_SQUARE
             print "Searching (album + artist): %s" % (full_try)
@@ -203,7 +203,6 @@ class MussorgskyAlbumArt:
     
 
     def __get_url_from_msn_results_page (self, page):
-
         if (not page):
             return
 
@@ -213,11 +212,11 @@ class MussorgskyAlbumArt:
         # 500 is just a safe limit
         for i in range (0, 500):
             # Iterate until find a jpeg
-            start = page.find ("furl=", starting_at)
+            start = page.find ("imgurl:&quot;", starting_at)
             if (start == -1):
                 yield None
-            end = page.find ("\"", start + len ("furl="))
-            current_option = page [start + len ("furl="): end].replace ("amp;", "")
+            end = page.find ("&", start + len ("imgurl:&quot;"))
+            current_option = page [start + len ("imgurl:&quot;"): end].replace ("amp;", "")
             if (current_option.lower().endswith (".jpg") or
                 current_option.lower().endswith (".jpeg")):
                 yield current_option
