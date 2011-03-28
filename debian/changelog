@@ -1,3 +1,9 @@
+mussorgsky (0.5.2-3) unstable; urgency=low
+
+  * Add bugtracker link in debian/control
+
+ -- Ivan Frade <ivan.frade@gmail.com>  Tue, 28 Mar 2011 13:31:00 +0300
+
 mussorgsky (0.5.2-1) unstable; urgency=low
 
   * Release 0.5.2
