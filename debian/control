@@ -6,6 +6,7 @@ Build-Depends: cdbs, debhelper (>= 5), python-all-dev (>= 2.5), python-central (
 Standards-Version: 3.8.0
 Homepage: http://mussorgsky.garage.maemo.org
 XS-Python-Version: current, >= 2.5
+XSBC-Bugtracker: https://bugs.maemo.org/enter_bug.cgi?product=Mussorgsky
 
 Package: mussorgsky
 Architecture: all
